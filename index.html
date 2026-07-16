@@ -4356,6 +4356,33 @@ function seriesBadgeHtml(series){
       ].join('');
     }
 
+    if(type==='challenge'){
+      var cTeam=data.teamName||'My Team', cGp=data.gp||'Weekly Challenge', cScore=data.score||0;
+      var cColor=data.teamColor||'#e8112d';
+      var cDark=luminance(cColor)<140, cText=cDark?'#ffffff':'#111111';
+      var cRounds=(data.completedRounds!=null&&data.targetRound!=null)?(data.completedRounds+' / '+data.targetRound):'';
+      card.innerHTML=[
+        '<div class="scard-bg" style="background:radial-gradient(circle at 90% 5%,rgba(255,255,255,.22),transparent 34%),linear-gradient(145deg,'+cColor+' 0%,'+cColor+'d8 62%,#0d1016 145%)">',
+          '<div class="scard-noise"></div>',
+          '<div class="scard-inner">',
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">',
+              '<div><div class="scard-eyebrow" style="color:'+cText+';opacity:.68">F1 DYNASTY · WEEKLY CHALLENGE'+(data.weekShort?' · '+escapeHtml(data.weekShort):'')+'</div>',
+              '<div class="scard-circuit" style="color:'+cText+';margin-bottom:0">'+escapeHtml(String(cGp).replace(' Grand Prix',' GP'))+'</div></div>',
+              '<div style="font-size:38px;line-height:1">🏁</div>',
+            '</div>',
+            '<div style="margin:22px 0 18px;padding:18px 14px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.16);border-radius:12px;text-align:center">',
+              '<div style="font-size:54px;font-weight:950;line-height:.9;color:'+cText+';letter-spacing:-2px">'+escapeHtml(cScore)+'</div>',
+              '<div style="font-size:11px;font-weight:800;letter-spacing:2px;color:'+cText+';opacity:.65;margin-top:8px">FINAL POINTS</div>',
+            '</div>',
+            '<div class="scard-headline" style="color:'+cText+';font-size:20px">'+escapeHtml(cTeam)+'</div>',
+            '<div class="scard-sub" style="color:'+cText+';opacity:.72;margin-bottom:12px">Challenge complete'+(cRounds?' · '+escapeHtml(cRounds)+' rounds':'')+'</div>',
+            (data.raceLine?'<div style="font-size:11px;line-height:1.45;color:'+cText+';opacity:.78;background:rgba(0,0,0,.16);padding:8px 10px;border-radius:7px;margin-bottom:12px"><strong>'+escapeHtml(String(cGp).replace(' Grand Prix',' GP'))+' contribution:</strong> '+escapeHtml(data.raceLine)+(data.weekendPts!=null?' · +'+escapeHtml(data.weekendPts)+' pts toward final score':'')+'</div>':''),
+            '<div class="scard-footer" style="color:'+cText+';opacity:.52">f1dynasty.com · #F1DynastyChallenge</div>',
+          '</div>',
+        '</div>'
+      ].join('');
+    }
+
     if(type==='season'){
       var { season, teamName, teamColor, position, wins, podiums, poles, points, driverChamp, driverChampPts, constructorChamp, seasonsPlayed, totalTitles, driverRows } = data;
       var tc2 = teamColor||'#c0392b';
@@ -4427,7 +4454,7 @@ function seriesBadgeHtml(series){
       '.scard-stat-lbl{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;font-family:system-ui,sans-serif}',
       '.scard-footer{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;font-family:system-ui,sans-serif}',
 
-      '#f1d-share-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px 100px;overflow-y:auto;-webkit-overflow-scrolling:touch}',
+      '#f1d-share-overlay{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 16px 100px;overflow-y:auto;-webkit-overflow-scrolling:touch}',
       '#f1d-share-overlay .sov-title{color:#fff;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;opacity:.7;font-family:system-ui,sans-serif}',
       '#f1d-share-overlay .sov-hint{color:rgba(255,255,255,.5);font-size:12px;text-align:center;margin-top:14px;line-height:1.6;font-family:system-ui,sans-serif}',
       '#f1d-share-overlay .sov-img{border-radius:16px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.5)}',
@@ -4458,6 +4485,12 @@ function seriesBadgeHtml(series){
       if(data.podiums>0) stats.push(data.podiums+' podiums');
       if(data.poles>0) stats.push(data.poles+' poles');
       return h+(stats.length?' — '+stats.join(' · '):'')+'\n\nf1dynasty.com';
+    }
+    if(type==='challenge'){
+      var challengeCaption='F1 Dynasty Weekly Challenge'+(data.weekShort?' · '+data.weekShort:'')+' — '+String(data.gp||'Grand Prix').replace(' Grand Prix',' GP')+'\n'
+        +(data.teamName||'My team')+': '+(data.score||0)+' points from Round 1 through the featured Grand Prix';
+      if(data.raceLine) challengeCaption+='\nFeatured GP contribution: '+data.raceLine+(data.weekendPts!=null?' · +'+data.weekendPts+' pts':'');
+      return challengeCaption+'\n\nTry it: f1dynasty.com  #F1DynastyChallenge';
     }
     return 'f1dynasty.com';
   }
@@ -4513,7 +4546,7 @@ function seriesBadgeHtml(series){
 
     var title = document.createElement('div');
     title.className = 'sov-title';
-    title.textContent = type==='season' ? 'YOUR SEASON CARD' : 'YOUR RACE CARD';
+    title.textContent = type==='season' ? 'YOUR SEASON CARD' : (type==='challenge' ? 'YOUR WEEKLY CHALLENGE CARD' : 'YOUR RACE CARD');
     overlay.appendChild(title);
 
     var card = buildCard(type, data);
@@ -4579,7 +4612,7 @@ function seriesBadgeHtml(series){
           dlBtn.onclick = function(){
             var a=document.createElement('a');
             a.href=img.src;
-            a.download='f1dynasty-'+type+'-'+(data.season||'')+'.png';
+            a.download='f1dynasty-'+type+'-'+(type==='challenge'?(data.gp||'weekly-challenge').toLowerCase().replace(/[^a-z0-9]+/g,'-'):(data.season||''))+'.png';
             a.click();
           };
           btns.insertBefore(dlBtn, closeBtn);
@@ -4593,7 +4626,7 @@ function seriesBadgeHtml(series){
               nativeBtn.textContent='↗ Share...';
               nativeBtn.onclick=function(){
                 var file=new File([blob],'f1dynasty.png',{type:'image/png'});
-                navigator.share({files:[file],title:'F1 Dynasty',text:buildCaption(type,data)}).catch(function(){});
+                navigator.share({files:[file],title:type==='challenge'?'F1 Dynasty Weekly Challenge':'F1 Dynasty',text:buildCaption(type,data)}).catch(function(){});
               };
               btns.insertBefore(nativeBtn, dlBtn);
             },'image/png');
@@ -4621,7 +4654,7 @@ function seriesBadgeHtml(series){
 
   function _addSocialButtons(container, imgDataUrl, type, data){
     var caption = buildCaption(type, data);
-    var filename = 'f1dynasty-'+(type==='season'?'season':'race')+'-'+(data.season||'')+'.png';
+    var filename = 'f1dynasty-'+(type==='season'?'season':type==='challenge'?'weekly-challenge':'race')+'-'+(type==='challenge'?(data.gp||'result').toLowerCase().replace(/[^a-z0-9]+/g,'-'):(data.season||''))+'.png';
 
     function dlThenOpen(url){
       if(imgDataUrl) _downloadCard(imgDataUrl, filename);
@@ -32224,7 +32257,7 @@ window._pwHandleOrder = function(code, val){
       var W=D.challenge, status=W.done?'COMPLETE':'IN PROGRESS';
       var nextLabel=W.done?'Final score locked':('Round '+esc(W.nextRound)+' · '+esc(W.nextRace||'Next race'));
       wcHtml='<div class="hqchallenge">'
-        + '<div class="fx jb gap12" style="align-items:flex-start"><div><div class="hudf fs10 red fw7" style="letter-spacing:.14em">WEEKLY CHALLENGE · '+status+'</div><div class="fw8 fs17 mt4">'+esc(W.gp||'Current challenge')+'</div></div><div class="hqp-badge" style="background:'+(W.done?'rgba(16,185,129,.12)':'rgba(232,17,45,.1)')+';color:'+(W.done?'#047857':'var(--red)')+';font-size:10px;padding:5px 8px;border-radius:6px;font-weight:800;white-space:nowrap">'+status+'</div></div>'
+        + '<div class="fx jb gap12" style="align-items:flex-start"><div><div class="hudf fs10 red fw7" style="letter-spacing:.14em">WEEKLY CHALLENGE'+(W.weekShort?' · '+esc(W.weekShort):'')+' · '+status+'</div><div class="fw8 fs17 mt4">'+esc(W.gp||'Current challenge')+'</div></div><div class="hqp-badge" style="background:'+(W.done?'rgba(16,185,129,.12)':'rgba(232,17,45,.1)')+';color:'+(W.done?'#047857':'var(--red)')+';font-size:10px;padding:5px 8px;border-radius:6px;font-weight:800;white-space:nowrap">'+status+'</div></div>'
         + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin-top:13px">'
         + '<div class="putile"><div class="k">ROUNDS</div><div class="v">'+esc(W.completedRounds)+' / '+esc(W.targetRound)+'</div></div>'
         + '<div class="putile"><div class="k">'+(W.done?'FINAL':'LIVE')+' SCORE</div><div class="v red">'+esc(W.score)+' PTS</div></div>'
@@ -32480,6 +32513,29 @@ window._pwHandleOrder = function(code, val){
     var sh=e.target.closest('[data-hqssort]');if(sh){var kind=sh.getAttribute('data-hqssort-kind'),key=sh.getAttribute('data-hqssort');TeamHQ._standingsSort=TeamHQ._standingsSort||{};var st=TeamHQ._standingsSort[kind]||{key:'points',dir:-1};if(st.key===key)st.dir*=-1;else{st.key=key;st.dir=key==='name'?1:-1;}TeamHQ._standingsSort[kind]=st;renderStandingsV3();return;}
   });
   renderStandings=renderStandingsV3;
+
+  // ---- public API ----`; });
+      // Offseason is a preparation workspace, not a sequence of equal-height rows. The
+      // earlier paired grids let a tall card (especially Seek a Move) create a huge empty
+      // hole beside it. Give each desktop column its own flow and use more of wide screens.
+      _hq = _hq.replace("  function show(name){", "  function show(name){\n    var _offWrap=$('.pgwrap'); if(_offWrap) _offWrap.classList.toggle('offseason-wide',name==='offseason');");
+      _hq = _hq.replace(/    el\.innerHTML = rail \+ careerHtml \+ '<div class="cols2"[\s\S]*?      \+ regs \+ footer;\n    syncMeta\('offseason'\);/, function(){ return String.raw`    var offseasonCss='<style>.offseason-lanes{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}.offseason-lane{display:flex;flex-direction:column;gap:24px;min-width:0}@media(min-width:1040px){.offseason-lanes{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}}@media(min-width:1440px){.pgwrap.offseason-wide{max-width:1520px}}</style>';
+    var leftLane='<div>'+ownerHtml+'</div>'
+      + '<div>'+secH('Season Review'+(O.fromSeason!=null?' · '+O.fromSeason:''))+review+'</div>'
+      + scoutBlock
+      + '<div>'+secH('Contracts · Drivers')+'<div class="card cardp">'+cdrv+cres+'</div></div>'
+      + '<div>'+secH('Driver Market')+'<div class="card cardp scrolly">'+mrows+'</div></div>';
+    var rightLane=(movesHtml?'<div>'+movesHtml+'</div>':'')
+      + '<div>'+secH('Winter Development')+dev+'</div>'
+      + engBlock
+      + '<div>'+secH('Contracts · Staff')+'<div class="card cardp">'+cstf+'</div></div>'
+      + '<div>'+secH('Sponsors')+'<div class="card cardp mb16"><div class="fs10 fnt hudf mb8" style="letter-spacing:.12em">CURRENT DEALS</div>'+scur+'</div><div class="card cardp"><div class="fs10 fnt hudf mb8" style="letter-spacing:.12em">OFFERS ON THE TABLE</div>'+soff+'</div></div>';
+    el.innerHTML=offseasonCss+rail+careerHtml+'<div class="offseason-lanes"><div class="offseason-lane">'+leftLane+'</div><div class="offseason-lane">'+rightLane+'</div></div>'+regs+footer;
+    syncMeta('offseason');`; });
+      // Route the challenge button into the same visual social-card system used by race
+      // and season results. The parent owns that renderer and displays it above Team HQ.
+      _hq = _hq.replace('  // ---- public API ----', function(){ return String.raw`
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-act="shareChallenge"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();emit('shareChallenge');},true);
 
   // ---- public API ----`; });
       _hq = _hq.replace('    toast: toast\n', '    toast: toast,\n    openStrategy: openStrategyOverlay\n');
@@ -32801,7 +32857,8 @@ window._pwHandleOrder = function(code, val){
           var lastScore=null;
           try { (Storage._getSlots()||[]).forEach(function(s){ var wc=s.data&&s.data.game&&s.data.game.weeklyChallenge; if(wc&&wc.id===_ch.id&&wc.done&&(lastScore==null||wc.score>lastScore)) lastScore=wc.score; }); } catch(e){}
           challenge={ id:_ch.id, gp:_ch.gp, gpShort:_ch.gp.replace(' Grand Prix',' GP'),
-                      dateLabel:(_ch.offseason?'Off-season rotation':(_mo[_dt.getMonth()]+' '+_dt.getDate()+' race day')),
+                      weekYear:_ch.weekYear, weekNumber:_ch.weekNumber, weekLabel:_ch.weekLabel, weekShort:_ch.weekShort,
+                      dateLabel:_ch.weekLabel+' · '+(_ch.offseason?'Off-season rotation':(_mo[_dt.getMonth()]+' '+_dt.getDate()+' race day')),
                       teamName:_chTeam.name||_ch.teamId, teamColor:_chTeam.color||'#c0392b', offseason:_ch.offseason, lastScore:lastScore };
         }
       } catch(e){}
@@ -33165,6 +33222,15 @@ window._pwHandleOrder = function(code, val){
     // front-runners instead.
     var TEAMS = ['redbull','haas','mclaren','alpine','ferrari','racingbulls','mercedes','williams'];
     var TOP_TEAMS = ['ferrari','mclaren','mercedes','redbull'];
+    function weekInfo(value){
+      var raw=value instanceof Date?value:new Date(String(value||'').slice(0,10)+'T00:00:00Z');
+      if(isNaN(raw.getTime())) raw=new Date();
+      var d=new Date(Date.UTC(raw.getUTCFullYear(),raw.getUTCMonth(),raw.getUTCDate()));
+      var day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+      var year=d.getUTCFullYear(), first=new Date(Date.UTC(year,0,1));
+      var week=Math.ceil((((d-first)/86400000)+1)/7), n=String(week).padStart(2,'0');
+      return {year:year,week:week,key:year+'-W'+n,label:year+' · Week '+n,short:year+' W'+n};
+    }
     function teamFor(idx, gp){
       try {
         var round = ((typeof DATA!=='undefined' && DATA.calendar)||[]).findIndex(function(c){ return c.name === gp; });
@@ -33182,14 +33248,17 @@ window._pwHandleOrder = function(code, val){
       }
       var off = false;
       if(idx === -1){ off = true; idx = Math.floor(now.getTime()/(7*86400000)) % CAL.length; }
-      return { id:(off?'off-':'')+CAL[idx][1]+'-'+CAL[idx][0].toLowerCase().replace(/[^a-z]+/g,'-'),
-               gp:CAL[idx][0], raceDate:CAL[idx][1], teamId:teamFor(idx, CAL[idx][0]), offseason:off };
+      var wi=weekInfo(off?now:CAL[idx][1]);
+      return { id:(off?('off-'+wi.key+'-'):CAL[idx][1]+'-')+CAL[idx][0].toLowerCase().replace(/[^a-z]+/g,'-'),
+               gp:CAL[idx][0], raceDate:CAL[idx][1], teamId:teamFor(idx, CAL[idx][0]), offseason:off,
+               weekYear:wi.year, weekNumber:wi.week, weekKey:wi.key, weekLabel:wi.label, weekShort:wi.short };
     }
     function progress(){
       try {
         var g=State.game, ch=g&&g.weeklyChallenge;
         if(!g||!ch) return null;
         var cal=g.calendar||[], pid=g.playerTeamId;
+        var wi=(ch.weekNumber&&ch.weekYear)?{year:ch.weekYear,week:ch.weekNumber,key:ch.weekKey||ch.weekYear+'-W'+String(ch.weekNumber).padStart(2,'0'),label:ch.weekLabel||ch.weekYear+' · Week '+String(ch.weekNumber).padStart(2,'0'),short:ch.weekShort||ch.weekYear+' W'+String(ch.weekNumber).padStart(2,'0')}:weekInfo(ch.raceDate||ch.startedAt);
         var targetIndex=cal.findIndex(function(r){return r.name===ch.gp;});
         if(targetIndex<0) targetIndex=Math.max(0,cal.length-1);
         var targetRound=targetIndex+1, completedRounds=0, liveScore=0;
@@ -33216,6 +33285,9 @@ window._pwHandleOrder = function(code, val){
           var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
           publicUntil=(Date.now()>until.getTime()?'Public challenge has rotated; this saved run is still valid.':'Featured publicly until '+mo[until.getMonth()]+' '+until.getDate()+'; your saved run remains playable after that.');
         } catch(e){}
+        var shareText=ch.shareText||('F1 Dynasty Weekly Challenge · '+wi.short+' — '+String(ch.gp||'Grand Prix').replace(' Grand Prix',' GP')
+          +'\n'+((State.getPlayerTeam()||{}).name||'My team')+': '+(ch.done?(ch.score||0):liveScore)+' pts from Round 1 through the '+String(ch.gp||'featured Grand Prix').replace(' Grand Prix',' GP')
+          +'\nTry it: f1dynasty.com  #F1DynastyChallenge');
         return {
           gp:ch.gp, done:!!ch.done, score:ch.done?(ch.score||0):liveScore, liveScore:liveScore,
           progress:Math.round(Math.min(1,completedRounds/Math.max(1,targetRound))*100),
@@ -33223,6 +33295,8 @@ window._pwHandleOrder = function(code, val){
           nextRound:nextIndex>=0?(nextIndex+1):targetRound,
           nextRace:nextIndex>=0?(cal[nextIndex].name||'Next round'):'Challenge complete',
           publicWindow:publicUntil,
+          shareText:shareText,
+          weekYear:wi.year, weekNumber:wi.week, weekKey:wi.key, weekLabel:wi.label, weekShort:wi.short,
           finishText:'Completes automatically after '+ch.gp+' (Round '+targetRound+').',
           scoreText:'Final score: every point earned by both cars from Round 1 through the featured Grand Prix, including sprints.'
         };
@@ -33260,9 +33334,10 @@ window._pwHandleOrder = function(code, val){
         ch.done = true; ch.score = Math.round(total*10)/10; ch.weekendPts = Math.round(weekendPts*10)/10;
         ch.finishedAt = Date.now(); ch.raceLine = lines.join(' \u00b7 ');
         var t = State.getPlayerTeam()||{};
-        ch.shareText = 'F1 Dynasty Weekly Challenge \u2014 '+ch.gp.replace(' Grand Prix',' GP')+' week'
-          + '\n'+(t.name||'My team')+': '+ch.score+' pts through the '+ch.gp.replace(' Grand Prix',' GP')
-          + (lines.length?(' (race day: '+lines.join(' & ')+', '+ch.weekendPts+' pts)'):'')
+        var cwi=(ch.weekNumber&&ch.weekYear)?{short:ch.weekShort||ch.weekYear+' W'+String(ch.weekNumber).padStart(2,'0')}:weekInfo(ch.raceDate||ch.startedAt);
+        ch.shareText = 'F1 Dynasty Weekly Challenge · '+cwi.short+' \u2014 '+ch.gp.replace(' Grand Prix',' GP')
+          + '\n'+(t.name||'My team')+': '+ch.score+' pts from Round 1 through the '+ch.gp.replace(' Grand Prix',' GP')
+          + (lines.length?('\nFeatured GP contribution: '+lines.join(' & ')+' \u00b7 +'+ch.weekendPts+' pts'):'')
           + '\nTry it: f1dynasty.com  #F1DynastyChallenge';
         if(!g.newsFeed) g.newsFeed = [];
         g.newsFeed.unshift({ icon:'\ud83c\udfc1', type:'success', msg:'<strong>Weekly Challenge complete:</strong> '+ch.score+' points at the '+ch.gp+'. Share your score on r/f1dynasty!', race:g.raceIndex, ts:Date.now() });
@@ -34736,7 +34811,19 @@ window._pwHandleOrder = function(code, val){
         } catch(e){ try { window._hqRC.toast('Could not delete that save','error'); } catch(e2){} }
       });
       rc.on('shareChallenge', function(){
-        try { if(window._f1dChallenge && window._f1dChallenge.showResult) window._f1dChallenge.showResult(); } catch(e){}
+        try {
+          var g=State.game, ch=g&&g.weeklyChallenge, tm=State.getPlayerTeam&&State.getPlayerTeam();
+          if(!ch||!ch.done||typeof window.shareResult!=='function') return;
+          var pg=(window._f1dChallenge&&window._f1dChallenge.progress)?window._f1dChallenge.progress():{};
+          window.shareResult('challenge',{
+            gp:ch.gp||'Weekly Challenge', score:ch.score||0, teamName:(tm&&tm.name)||'My Team',
+            teamColor:(tm&&tm.color)||'#e8112d', completedRounds:pg&&pg.completedRounds,
+            targetRound:pg&&pg.targetRound, raceLine:ch.raceLine||'', weekendPts:ch.weekendPts,
+            season:g.season||'', weekYear:pg&&pg.weekYear||ch.weekYear, weekNumber:pg&&pg.weekNumber||ch.weekNumber,
+            weekLabel:pg&&pg.weekLabel||ch.weekLabel, weekShort:pg&&pg.weekShort||ch.weekShort,
+            caption:ch.shareText||pg&&pg.shareText||''
+          });
+        } catch(e){ try { UI.toast('Could not build the challenge share card.','error'); } catch(e2){} }
       });
       rc.on('startChallenge', function(p){
         p=p||{};
@@ -34754,7 +34841,8 @@ window._pwHandleOrder = function(code, val){
           if(window.__hqStarting) return; window.__hqStarting=true; setTimeout(function(){window.__hqStarting=false;},1500);
           State._pendingDifficulty = 'hard';
           State.newGame(((p.managerName||'').trim())||'Challenger', ch.teamId, 2026);
-          State.game.weeklyChallenge = { id:ch.id, gp:ch.gp, teamId:ch.teamId, raceDate:ch.raceDate, startedAt:Date.now(), done:false };
+          State.game.weeklyChallenge = { id:ch.id, gp:ch.gp, teamId:ch.teamId, raceDate:ch.raceDate, startedAt:Date.now(), done:false,
+            weekYear:ch.weekYear, weekNumber:ch.weekNumber, weekKey:ch.weekKey, weekLabel:ch.weekLabel, weekShort:ch.weekShort };
           (typeof Storage!=='undefined'&&Storage.saveGame)&&Storage.saveGame();
           (typeof UI!=='undefined') && UI.showPage && UI.showPage('game');
           try { window._hqRC.render(window._buildHQAll()); window._hqRC.show('offseason'); } catch(e){}
