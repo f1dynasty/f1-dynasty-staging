@@ -21615,9 +21615,9 @@ const _sponsorInc=sumSponsorIncome(State.game.sponsors||[]);
       if(opt) moments.push({icon:'🔧', text:`Strategy: ${opt.label} — ${opt.desc||''}`});
     }
 
-    // Top 5 result rows
-    const top8 = sorted.filter(r=>!r.dnf).slice(0,8);
-    const top8Html = top8.map(r=>{
+    // Show the complete standard points-paying field in the compact debrief.
+    const top10 = sorted.filter(r=>!r.dnf).slice(0,10);
+    const top10Html = top10.map(r=>{
       const mine = myIdSet.has(String(r.driverId));
       const medal = r.position===1?'🥇':r.position===2?'🥈':r.position===3?'🥉':'';
       return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px;${mine?'background:rgba(192,57,43,.04);margin:0 -14px;padding:5px 14px':''}">
@@ -32405,6 +32405,83 @@ window._pwHandleOrder = function(code, val){
   confirmStrategyOverlay=confirmStrategyOverlayV3;
 
   // ---- public API ----`; });
+      // Full Standings centre: the original game tracked far more than the first Team HQ
+      // pass exposed. Rebuild every view natively inside the shell (including responsive
+      // result grids and SVG progression) instead of revealing the classic page.
+      _hq = _hq.replace('  // ---- public API ----', function(){ return String.raw`
+  function renderStandingsV3(){
+    var el=body('standings');if(!el)return;var S=TeamHQ.data.standings||{},R=S.results||{};
+    var styles='<style>'
+      +'.stpage{min-width:0}.stcard{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(15,18,24,.04);overflow:hidden}.stintro{font-size:12px;color:var(--mut);line-height:1.55;margin:-5px 0 13px}.sttblwrap,.stscroll{width:100%;overflow-x:auto;overscroll-behavior-inline:contain}.sttbl{width:100%;border-collapse:collapse;min-width:840px}.sttbl th{padding:10px 11px;background:#f6f7f9;border-bottom:1px solid var(--line);font-size:9px;letter-spacing:.1em;color:var(--fnt);text-align:right;white-space:nowrap}.sttbl th:first-child,.sttbl th:nth-child(3){text-align:left}.sttbl th button{all:unset;cursor:pointer}.sttbl th button.on{color:var(--red)}.sttbl td{padding:11px;border-bottom:1px solid var(--line);font-size:12px;text-align:right;white-space:nowrap}.sttbl tr:last-child td{border-bottom:0}.sttbl tr.mine{background:rgba(232,17,45,.045)}.sttbl td:first-child,.sttbl td:nth-child(3){text-align:left}.stname{display:flex;align-items:center;gap:8px;min-width:180px}.stbar{width:4px;height:28px;border-radius:5px;flex:none}.stpos{font:800 15px system-ui,-apple-system,"Segoe UI",sans-serif}.stdelta{font-size:9px;font-weight:800}.sttoggle{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.sttoggle button{border:1px solid var(--line);background:#fff;color:var(--mut);border-radius:8px;padding:7px 11px;font:700 11px system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer}.sttoggle button.on{background:var(--red);border-color:var(--red);color:#fff}.stresult{padding:16px;margin-bottom:14px}.stresult-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:12px;font-weight:800}.stresult-title span{font-size:10px;color:var(--mut);font-weight:600}.stgrid{border-collapse:separate;border-spacing:2px;min-width:max-content}.stgrid th{font-size:8px;color:var(--fnt);font-weight:700;height:20px;min-width:22px;text-align:center}.stgrid th:first-child{min-width:118px;text-align:left;position:sticky;left:0;z-index:3;background:#fff}.stgrid td{padding:0;text-align:center}.stgrid td:first-child{position:sticky;left:0;z-index:2;background:#fff;text-align:left;padding-right:7px}.stgrid tr.mine td:first-child{background:#fff5f6}.stdriver{display:flex;align-items:center;gap:6px;height:22px;font-size:11px;white-space:nowrap}.stdot{width:6px;height:6px;border-radius:50%;flex:none}.stcell{width:22px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800}.stlegend{display:flex;gap:8px 13px;flex-wrap:wrap;font-size:10px;color:var(--mut);margin-top:11px}.stlegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}.stchart{padding:12px 10px 4px}.stlegendline{display:flex;gap:10px 18px;flex-wrap:wrap;margin-top:12px}.stlegendline>div{display:flex;align-items:center;gap:6px;font-size:11px;min-width:0}.stline{width:17px;height:0;border-top:3px solid;flex:none}.sth2h-grid{display:grid;grid-template-columns:1fr 58px 1fr;gap:10px;align-items:stretch}.sth2h-driver{background:#f5f6f8;border:1px solid var(--line);border-radius:10px;padding:13px;text-align:center;min-width:0}.sth2h-driver b{display:block;font-size:12px;overflow-wrap:anywhere}.sth2h-score{font-size:28px;font-weight:900;margin:5px 0}.sth2h-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:9px;color:var(--mut)}.strecent{margin-top:14px;border-top:1px solid var(--line)}.strecent-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line)}.strecent-row:last-child{border-bottom:0}.strecent-result{font-size:11px;font-weight:800;white-space:nowrap}.sth2h-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.stempty{padding:34px 18px;text-align:center;color:var(--mut);font-size:12px}.ststatline{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:16px}.ststat{padding:12px;background:#fff;border:1px solid var(--line);border-radius:10px}.ststat span{display:block;font-size:9px;letter-spacing:.08em;color:var(--fnt)}.ststat b{display:block;margin-top:4px;font-size:18px}.stview{font-size:9px!important;padding:6px 8px!important}'
+      +'@media(max-width:760px){.sth2h-cols{grid-template-columns:1fr}.ststatline{grid-template-columns:repeat(2,1fr)}.ststat:last-child{grid-column:span 2}.stpage .subtabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.stpage .subtab{white-space:nowrap}.stresult{padding:12px}.stgrid th:first-child{min-width:96px}.stdriver{font-size:10px}.stchart{padding:5px 2px}.stlegendline{gap:8px 11px}.sttbl td,.sttbl th{padding-left:9px;padding-right:9px}}'
+      +'@media(max-width:430px){.sth2h-grid{grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);gap:6px}.sth2h-driver{padding:10px 6px}.sth2h-score{font-size:23px}.strecent-row{align-items:flex-start;flex-direction:column;gap:5px}.strecent-result{white-space:normal}.sttoggle button{flex:1}.stresult-title{align-items:flex-start;flex-direction:column;gap:2px}}'
+      +'</style>';
+    function delta(d){if(d==null)return '<span class="stdelta" style="color:#a1a6b0">—</span>';if(!d)return '<span class="stdelta" style="color:#a1a6b0">—</span>';return '<span class="stdelta" style="color:'+(d>0?'var(--grn)':'var(--red)')+'">'+(d>0?'▲':'▼')+Math.abs(d)+'</span>';}
+    function sortRows(kind,rows){
+      TeamHQ._standingsSort=TeamHQ._standingsSort||{};var st=TeamHQ._standingsSort[kind]||{key:'points',dir:-1};TeamHQ._standingsSort[kind]=st;
+      return rows.slice().sort(function(a,b){var av=a[st.key],bv=b[st.key];if(st.key==='name')return st.dir*(String(av||'').localeCompare(String(bv||'')));return st.dir*((Number(av)||0)-(Number(bv)||0));});
+    }
+    function sortHead(kind,key,label){var st=(TeamHQ._standingsSort||{})[kind]||{key:'points',dir:-1};return '<button type="button" class="'+(st.key===key?'on':'')+'" data-hqssort="'+key+'" data-hqssort-kind="'+kind+'">'+label+(st.key===key?(st.dir<0?' ▼':' ▲'):'')+'</button>';}
+    function driversTable(){
+      var rows=sortRows('drivers',S.drivers||[]).map(function(d){var ar=argOf({id:d.id,name:d.name});return '<tr class="'+(d.isPlayer?'mine':'')+'"><td><span class="stpos">'+(d.isSubstitute?'—':d.pos)+'</span></td><td>'+delta(d.delta)+'</td><td><div class="stname"><i class="stbar" style="background:'+esc(d.color||'#888')+'"></i><div><b>'+esc(d.name)+'</b>'+(d.isSubstitute?' <span class="chipT" style="font-size:8px">SUB</span>':'')+'<div class="fs10 mut mt4">'+esc(d.team||'')+'</div></div></div></td><td class="mono fw8">'+d.points+'</td><td class="mono">'+d.wins+'</td><td class="mono">'+d.podiums+'</td><td class="mono">'+d.poles+'</td><td class="mono">'+d.dnfs+'</td><td class="mono">'+d.fastestLaps+'</td><td class="mono">'+d.ovr+'</td><td class="mono">'+d.age+'</td><td><button class="renew ghost stview" data-act="viewDriver" data-arg=\''+ar+'\'>VIEW</button></td></tr>';}).join('');
+      return secH("Drivers' Championship · "+(S.drivers||[]).length+' Classified')+'<div class="stintro">Full championship detail, including countback position, retirements, fastest laps and current driver rating. Select View for the complete profile.</div><div class="stcard sttblwrap"><table class="sttbl"><thead><tr><th>#</th><th>±</th><th>'+sortHead('drivers','name','DRIVER')+'</th><th>'+sortHead('drivers','points','PTS')+'</th><th>'+sortHead('drivers','wins','W')+'</th><th>'+sortHead('drivers','podiums','POD')+'</th><th>'+sortHead('drivers','poles','POLE')+'</th><th>'+sortHead('drivers','dnfs','DNF')+'</th><th>'+sortHead('drivers','fastestLaps','FL')+'</th><th>'+sortHead('drivers','ovr','OVR')+'</th><th>'+sortHead('drivers','age','AGE')+'</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    }
+    function constructorsTable(){
+      var rows=sortRows('constructors',S.constructors||[]).map(function(t){var ar=argOf({id:t.id});return '<tr class="'+(t.isPlayer?'mine':'')+'"><td><span class="stpos">'+t.pos+'</span></td><td>'+delta(t.delta)+'</td><td><div class="stname"><i class="stbar" style="background:'+esc(t.color||'#888')+'"></i><b>'+esc(t.name)+'</b></div></td><td class="mono fw8">'+t.points+'</td><td class="mono">'+t.wins+'</td><td class="mono">'+t.podiums+'</td><td class="mono">'+t.poles+'</td><td class="mono">'+t.dnfs+'</td><td class="mono">'+t.car+'</td><td><button class="renew ghost stview" data-act="viewTeam" data-arg=\''+ar+'\'>VIEW</button></td></tr>';}).join('');
+      return secH("Constructors' Championship · "+(S.constructors||[]).length+' Teams')+'<div class="stintro">Team points with wins, podiums, poles, retirements and current overall car performance.</div><div class="stcard sttblwrap"><table class="sttbl" style="min-width:700px"><thead><tr><th>#</th><th>±</th><th>'+sortHead('constructors','name','TEAM')+'</th><th>'+sortHead('constructors','points','PTS')+'</th><th>'+sortHead('constructors','wins','W')+'</th><th>'+sortHead('constructors','podiums','POD')+'</th><th>'+sortHead('constructors','poles','POLE')+'</th><th>'+sortHead('constructors','dnfs','DNF')+'</th><th>'+sortHead('constructors','car','CAR')+'</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    }
+    function posColor(p){p=Number(p)||99;return p===1?'#e8961a':p===2?'#9ca3af':p===3?'#cd7c2f':p<=6?'#159455':p<=(R.pointsEnd||10)?'#36c979':'#667085';}
+    function legend(){return '<div class="stlegend"><span><i style="background:#e8961a"></i>P1</span><span><i style="background:#9ca3af"></i>P2</span><span><i style="background:#cd7c2f"></i>P3</span><span><i style="background:#159455"></i>P4–6</span><span><i style="background:#36c979"></i>P7–'+(R.pointsEnd||10)+'</span><span><i style="background:#667085"></i>No points</span><span><i style="background:#dc2626"></i>DNF</span></div>';}
+    function resultSet(races,label,view){
+      if(!races.length)return '';
+      var drivers=(R.drivers||[]).filter(function(d){return races.some(function(r){return (r.entries||[]).some(function(x){return String(x.id)===String(d.id);});});});
+      var head='',body='';
+      if(view==='grid'){
+        head=(races||[]).map(function(r){return '<th title="'+esc(r.name)+'">'+esc(r.short||r.round)+'</th>';}).join('');
+        body=drivers.map(function(d){var cells=races.map(function(r){var x=(r.entries||[]).find(function(e){return String(e.id)===String(d.id);});if(!x)return '<td><span class="stcell" style="background:transparent"></span></td>';var bg=x.dnf?'#dc2626':posColor(x.pos),txt=x.dnf?'R':x.pos;return '<td><span class="stcell" style="background:'+bg+'" title="'+esc(r.name)+' · '+esc(d.name)+' · '+(x.dnf?'DNF':'P'+x.pos)+'">'+txt+'</span></td>';}).join('');return '<tr class="'+(d.mine?'mine':'')+'"><td><span class="stdriver"><i class="stdot" style="background:'+esc(d.color)+'"></i><b>'+esc(d.last||d.name)+'</b></span></td>'+cells+'</tr>';}).join('');
+      }else{
+        var cols=[];for(var p=1;p<=(R.posMax||22);p++)cols.push(p);head=cols.map(function(p){return '<th>'+p+'</th>';}).join('')+'<th style="color:#dc2626">DNF</th>';
+        body=drivers.map(function(d){var counts=new Array(R.posMax||22).fill(0),dnf=0;races.forEach(function(r){var x=(r.entries||[]).find(function(e){return String(e.id)===String(d.id);});if(!x)return;if(x.dnf)dnf++;else if(x.pos&&x.pos<=counts.length)counts[x.pos-1]++;});var cells=counts.map(function(n,i){return '<td><span class="stcell" style="background:'+(n?posColor(i+1):'transparent')+'">'+(n||'')+'</span></td>';}).join('')+'<td><span class="stcell" style="background:'+(dnf?'#dc2626':'transparent')+'">'+(dnf||'')+'</span></td>';return '<tr class="'+(d.mine?'mine':'')+'"><td><span class="stdriver"><i class="stdot" style="background:'+esc(d.color)+'"></i><b>'+esc(d.last||d.name)+'</b></span></td>'+cells+'</tr>';}).join('');
+      }
+      return '<div class="stcard stresult"><div class="stresult-title"><b>'+label+'</b><span>'+races.length+' completed '+(races.length===1?'race':'races')+'</span></div><div class="stscroll"><table class="stgrid"><thead><tr><th>DRIVER</th>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    }
+    function resultsView(){
+      var view=TeamHQ._standingsResultsView||'heatmap',has=(R.gp||[]).length||(R.sprint||[]).length;if(!has)return '<div class="stcard stempty">Results detail appears after the first completed race.</div>';
+      return secH('Season Results · '+esc(R.season||''))+'<div class="stintro">Switch between finishing-position totals and every individual race result. Grand Prix and Sprint records are tracked separately.</div><div class="sttoggle"><button type="button" data-hqsr-view="heatmap" class="'+(view==='heatmap'?'on':'')+'">Heatmap</button><button type="button" data-hqsr-view="grid" class="'+(view==='grid'?'on':'')+'">Race by Race</button></div>'+resultSet(R.gp||[],'🏁 Grand Prix',view)+resultSet(R.sprint||[],'⚡ Sprint',view)+legend();
+    }
+    function progressionView(){
+      var P=S.progression;if(!P)return '<div class="stcard stempty">The progression chart appears once at least two rounds are complete.</div>';
+      var mode=TeamHQ._standingsProgMode||'drivers',series=(mode==='drivers'?P.drivers:P.teams).slice(0,mode==='drivers'?8:10),n=P.labels.length,W=760,H=350,L=42,RR=15,T=18,B=48,pw=W-L-RR,ph=H-T-B,max=Math.max.apply(null,[1].concat(series.map(function(s){return s.final||0;})));
+      var x=function(i){return L+(n<=1?0:pw*i/(n-1));},y=function(v){return T+ph-ph*(v/max);},grid='',labels='',lines='',dots='',seen={},dashBy={};
+      for(var k=0;k<=5;k++){var val=Math.round(max*k/5),yy=y(val);grid+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-RR)+'" y2="'+yy+'" stroke="#e2e5ea"/><text x="'+(L-7)+'" y="'+(yy+3)+'" text-anchor="end" font-size="9" fill="#8b91a0">'+val+'</text>';}
+      var step=Math.max(1,Math.ceil(n/12));P.labels.forEach(function(lb,i){if(i%step&&i!==n-1)return;labels+='<text x="'+x(i)+'" y="'+(H-B+18)+'" text-anchor="middle" font-size="8.5" fill="#8b91a0">'+esc(lb)+'</text>';});
+      series.forEach(function(s){var key=mode==='drivers'?String(s.teamId):String(s.id),dash='';if(mode==='drivers'&&seen[key])dash='5 4';seen[key]=1;dashBy[String(s.id)]=dash;var pts=(s.cum||[]).map(function(v,i){return x(i).toFixed(1)+','+y(v).toFixed(1);}).join(' ');lines+='<polyline points="'+pts+'" fill="none" stroke="'+esc(s.color||'#888')+'" stroke-width="'+(s.isPlayer?3.4:2)+'" '+(dash?'stroke-dasharray="'+dash+'"':'')+' stroke-linejoin="round" stroke-linecap="round" opacity="'+(s.isPlayer?1:.88)+'"/>';var last=(s.cum||[])[n-1]||0;dots+='<circle cx="'+x(n-1)+'" cy="'+y(last)+'" r="'+(s.isPlayer?3.6:2.7)+'" fill="'+esc(s.color||'#888')+'"><title>'+esc(s.name)+' · '+last+' pts</title></circle>';});
+      var svg='<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:100%;height:auto" role="img" aria-label="Cumulative '+mode+' championship points"><text x="12" y="'+(T+ph/2)+'" transform="rotate(-90 12 '+(T+ph/2)+')" text-anchor="middle" font-size="9" fill="#8b91a0">Points</text>'+grid+lines+dots+labels+'</svg>';
+      var lg=series.map(function(s){return '<div style="'+(s.isPlayer?'font-weight:800':'')+'"><i class="stline" style="border-color:'+esc(s.color||'#888')+';border-top-style:'+(dashBy[String(s.id)]?'dashed':'solid')+'"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.name)+'</span><b class="mono">'+s.final+'</b></div>';}).join('');
+      return secH('Championship Progression · '+esc(P.season))+'<div class="stintro">Cumulative points across '+n+' completed rounds. Your team is bold; teammates share a colour and the second line is dashed.</div><div class="sttoggle"><button type="button" data-hqsp-mode="drivers" class="'+(mode==='drivers'?'on':'')+'">Drivers</button><button type="button" data-hqsp-mode="teams" class="'+(mode==='teams'?'on':'')+'">Constructors</button></div><div class="stcard stchart">'+svg+'</div><div class="stlegendline">'+lg+'</div>';
+    }
+    function h2hView(){
+      var H=S.h2h;if(!H)return '<div class="stcard stempty">Head-to-head detail appears once both race drivers have completed sessions together.</div>';
+      var aLast=H.aName.split(' ').slice(-1)[0],bLast=H.bName.split(' ').slice(-1)[0];
+      function score(title,a,b,n,ties,label){return '<div style="margin-bottom:14px"><div class="fs10 fnt fw8" style="letter-spacing:.09em;margin-bottom:7px">'+title+'</div><div class="sth2h-grid"><div class="sth2h-driver"><b style="color:var(--red)">'+esc(H.aName)+'</b><div class="sth2h-score">'+a+'</div><span class="fs9 mut">'+label+'</span></div><div class="sth2h-vs"><b>VS</b><span>'+n+' sessions</span><span>'+ties+' tied</span></div><div class="sth2h-driver"><b>'+esc(H.bName)+'</b><div class="sth2h-score">'+b+'</div><span class="fs9 mut">'+label+'</span></div></div></div>';}
+      function fmt(p){return String(p).toUpperCase()==='DNF'?'DNF':(p==null||p==='—'?'—':'P'+p);}
+      function recent(list){if(!list.length)return '<div class="fs11 mut" style="padding:12px 2px">No sessions yet.</div>';return '<div class="strecent">'+list.map(function(r){return '<div class="strecent-row"><div><b class="fs12">'+esc(r.raceName)+'</b><div class="fs10 mut mt4">Season '+esc(r.season)+' · '+esc(r.label)+'</div></div><div class="strecent-result">'+esc(aLast)+' '+fmt(r.aPos)+' · '+esc(bLast)+' '+fmt(r.bPos)+'</div></div>';}).join('')+'</div>';}
+      var gp=(H.recentRace||[]).map(function(r){return Object.assign({},r,{label:'Race',order:2});}).concat((H.recentQuali||[]).filter(function(r){return r.type==='gp';}).map(function(r){return Object.assign({},r,{label:'Qualifying',order:1});})).sort(function(a,b){return (b.sortKey-a.sortKey)||(b.order-a.order);}).slice(0,10);
+      var sp=(H.recentSprintRace||[]).map(function(r){return Object.assign({},r,{label:'Sprint Race',order:2});}).concat((H.recentQuali||[]).filter(function(r){return r.type==='sprint';}).map(function(r){return Object.assign({},r,{label:'Sprint Qualifying',order:1});})).sort(function(a,b){return (b.sortKey-a.sortKey)||(b.order-a.order);}).slice(0,10);
+      var sprint=(H.sprintRaceSessions||H.sprintSessions)?'<div>'+secH('Sprint Weekend')+'<div class="stcard" style="padding:16px">'+(H.sprintRaceSessions?score('SPRINT RACE',H.aSprintRaceWins,H.bSprintRaceWins,H.sprintRaceSessions,H.sprintRaceTies,'Sprint wins'):'')+(H.sprintSessions?score('SPRINT QUALIFYING',H.aSprintWins,H.bSprintWins,H.sprintSessions,H.sprintTies,'SQ wins'):'')+'<div class="fs10 fnt fw8" style="letter-spacing:.09em;margin-top:3px">RECENT</div>'+recent(sp)+'</div></div>':'';
+      return '<div class="sth2h-cols"><div>'+secH('Grand Prix Weekend')+'<div class="stcard" style="padding:16px">'+score('RACE',H.aRaceWins,H.bRaceWins,H.raceSessions,H.raceTies,'Race wins')+score('QUALIFYING',H.aGpWins,H.bGpWins,H.gpSessions,H.gpTies,'Qualifying wins')+'<div class="fs10 fnt fw8" style="letter-spacing:.09em;margin-top:3px">RECENT</div>'+recent(gp)+'</div></div>'+sprint+'</div>';
+    }
+    var stat=S.stats||{},statline='<div class="ststatline"><div class="ststat"><span>RACES</span><b>'+((stat.races==null)?'—':stat.races)+'</b></div><div class="ststat"><span>WINS</span><b>'+((stat.wins==null)?'—':stat.wins)+'</b></div><div class="ststat"><span>PODIUMS</span><b>'+((stat.podiums==null)?'—':stat.podiums)+'</b></div><div class="ststat"><span>BEST FINISH</span><b>'+((stat.best==null)?'—':('P'+stat.best))+'</b></div><div class="ststat"><span>DNFS</span><b>'+((stat.dnfs==null)?'—':stat.dnfs)+'</b></div></div>';
+    el.innerHTML=styles+'<div class="stpage">'+statline+subtabs('standings',[['drivers','Drivers',(S.drivers||[]).length],['constructors','Constructors',(S.constructors||[]).length],['results','Results',(R.gp||[]).length+(R.sprint||[]).length],['progression','Progression',null],['h2h','H2H',null]])+tabpanel('standings','drivers',driversTable())+tabpanel('standings','constructors',constructorsTable())+tabpanel('standings','results',resultsView())+tabpanel('standings','progression',progressionView())+tabpanel('standings','h2h',h2hView())+'</div>';
+  }
+  document.addEventListener('click',function(e){
+    var rv=e.target.closest('[data-hqsr-view]');if(rv){TeamHQ._standingsResultsView=rv.getAttribute('data-hqsr-view');renderStandingsV3();return;}
+    var pm=e.target.closest('[data-hqsp-mode]');if(pm){TeamHQ._standingsProgMode=pm.getAttribute('data-hqsp-mode');renderStandingsV3();return;}
+    var sh=e.target.closest('[data-hqssort]');if(sh){var kind=sh.getAttribute('data-hqssort-kind'),key=sh.getAttribute('data-hqssort');TeamHQ._standingsSort=TeamHQ._standingsSort||{};var st=TeamHQ._standingsSort[kind]||{key:'points',dir:-1};if(st.key===key)st.dir*=-1;else{st.key=key;st.dir=key==='name'?1:-1;}TeamHQ._standingsSort[kind]=st;renderStandingsV3();return;}
+  });
+  renderStandings=renderStandingsV3;
+
+  // ---- public API ----`; });
       _hq = _hq.replace('    toast: toast\n', '    toast: toast,\n    openStrategy: openStrategyOverlay\n');
       return _hq;
     } catch(e){ return null; }
@@ -32557,11 +32634,13 @@ window._pwHandleOrder = function(code, val){
         try {
           var lastDone=null; for (var i=cal.length-1;i>=0;i--){ if (cal[i].raceDone && cal[i].raceResult && cal[i].raceResult.length){ lastDone=cal[i]; break; } }
           if (lastDone){
-            var rows=lastDone.raceResult.slice().sort(function(a,b){ if(a.dnf&&b.dnf) return 0; if(a.dnf) return 1; if(b.dnf) return -1; return (a.position||99)-(b.position||99); }).slice(0,8);
+            // A Grand Prix normally pays the first ten positions, so the dashboard
+            // classification must never cut off P9 and P10.
+            var rows=lastDone.raceResult.slice().sort(function(a,b){ if(a.dnf&&b.dnf) return 0; if(a.dnf) return 1; if(b.dnf) return -1; return (a.position||99)-(b.position||99); }).slice(0,10);
             tower={ title:'Last Race \u00B7 '+(lastDone.name||''), header:'FINISH', badge:'FINAL', summary: window._raceStoryText(lastDone,false),
               lines: rows.map(function(r){ var tt=team_(g,r.teamId); return { pos:(r.dnf?'DNF':(r.position||'')), color:(tt.color||'#565d6c'), name:(r.driverName||''), fl:!!r.fastestLap, team:(r.teamName||tt.name||''), pts:(r.points||0), me:String(r.teamId)===String(teamId) }; }) };
           } else {
-            var ds=[]; try { ds=(State.getDriverStandings()||[]).slice(0,8); } catch(e){}
+            var ds=[]; try { ds=(State.getDriverStandings()||[]).slice(0,10); } catch(e){}
             tower={ title:'Championship Order', header:'POS', badge:'STANDINGS',
               lines: ds.map(function(r,ix){ var d=r.driver||{}; var tt=team_(g,d.teamId); return { pos:ix+1, color:(tt.color||'#565d6c'), name:(d.name||''), fl:false, team:(tt.name||''), pts:(r.points||0), me:String(d.teamId)===String(teamId) }; }) };
           }
@@ -32748,13 +32827,54 @@ window._pwHandleOrder = function(code, val){
   var ROLE={td:'Technical Director',rs:'Race Strategist',cm:'Chief Mechanic',pcc:'Pit Crew Chief'};
 
   window._buildHQStandings = function(){
-    var g=State.game, pid=g.playerTeamId, out={constructors:[],drivers:[],results:[],progression:[],stats:{}};
-    var podByTeam={}, poleByTeam={};
+    var g=State.game, pid=g.playerTeamId, out={constructors:[],drivers:[],results:{season:g.season||'',posMax:22,pointsEnd:10,drivers:[],gp:[],sprint:[]},progression:null,h2h:null,stats:{}};
+    var podByTeam={}, poleByTeam={}, pids={};
+    try { (State.getPlayerDrivers()||[]).forEach(function(d){pids[String(d.id)]=1;}); } catch(e){}
     try { (g.drivers||[]).forEach(function(d){ if(!d.teamId) return; var k=String(d.teamId); podByTeam[k]=(podByTeam[k]||0)+(d.podiums||0); poleByTeam[k]=(poleByTeam[k]||0)+(d.poles||0); }); } catch(e){}
-    try { (State.getConstructorStandings()||[]).forEach(function(r,i){ var t=T_(r.team&&r.team.id); var tid=String(r.team&&r.team.id); out.constructors.push({ pos:i+1, id:(r.team&&r.team.id), name:(r.team&&r.team.name)||'', color:t.color||'#888', points:r.points||0, wins:r.wins||t.wins||0, podiums:podByTeam[tid]||0, poles:poleByTeam[tid]||0, isPlayer:tid===String(pid) }); }); } catch(e){}
-    try { (State.getDriverStandings()||[]).forEach(function(r,i){ var d=r.driver||{}; var t=T_(d.teamId); out.drivers.push({ pos:i+1, name:d.name||'', code:dcode(d.name), team:t.name||'', color:t.color||'#888', points:r.points||0, wins:r.wins||d.wins||0, podiums:d.podiums||0, poles:d.poles||0, isPlayer:String(d.teamId)===String(pid) }); }); } catch(e){}
-    try { out.results=(g.calendar||[]).filter(function(r){return r.raceDone&&r.raceResult&&r.raceResult.length;}).slice(-8).reverse().map(function(r){ var top=r.raceResult.filter(function(x){return !x.dnf;}).slice().sort(function(a,b){return a.position-b.position;}).slice(0,3); return {name:r.name||'', podium:top.map(function(x){return (x.driverName||x.name||'')+' P'+x.position;})}; }); } catch(e){}
-    try { out.progression=(g.calendar||[]).filter(function(r){return r.raceDone;}).slice(-10).map(function(r,i){ var mine=(r.raceResult||[]).filter(function(x){return String(x.teamId)===String(pid);}); return {round:i+1,name:r.name||'',points:mine.reduce(function(s,x){return s+(x.points||0);},0)}; }); } catch(e){}
+    var prevC={}, prevD={};
+    try { (((g.lastRaceResult||{}).preConstrStandings)||[]).forEach(function(x){prevC[String(x.id)]=x.pos;}); (((g.lastRaceResult||{}).preDriverStandings)||[]).forEach(function(x){prevD[String(x.id)]=x.pos;}); } catch(e){}
+    try { (State.getConstructorStandings()||[]).forEach(function(r,i){
+      var t=r.team||T_(r.team&&r.team.id), tid=String(t.id), car=null;
+      try { car=Math.round(getTeamOverallCar(t)); } catch(e){ car=Math.round(t.carPerformance||0); }
+      var old=prevC[tid], delta=old==null?null:old-(i+1);
+      out.constructors.push({pos:i+1,id:t.id,name:t.name||'',color:t.color||'#888',points:r.points||t.seasonPoints||0,wins:r.wins||t.wins||0,podiums:t.podiums!=null?t.podiums:(podByTeam[tid]||0),poles:t.poles!=null?t.poles:(poleByTeam[tid]||0),dnfs:r.dnfs||0,car:car,delta:delta,isPlayer:tid===String(pid)});
+    }); } catch(e){}
+    try { (State.getDriverStandings()||[]).forEach(function(r,i){
+      var d=r.driver||{}, t=T_(d.teamId), did=String(d.id), old=prevD[did], delta=old==null?null:old-(i+1);
+      out.drivers.push({pos:i+1,id:d.id,name:d.name||'',code:dcode(d.name),team:t.name||'',teamId:d.teamId,color:t.color||'#888',points:r.points||d.seasonPoints||0,wins:r.wins||d.wins||0,podiums:d.podiums||0,poles:d.poles||0,dnfs:r.dnfs||0,fastestLaps:d.fastestLaps||0,ovr:Math.round(d.rating||0),age:d.age||0,isSubstitute:!!r.isSubstitute,delta:delta,isPlayer:!!pids[did]});
+    }); } catch(e){}
+    // Complete race-by-race result data. The shell derives both the heatmap and the
+    // per-round grid from this one compact representation.
+    try {
+      var points=(Array.isArray(g.customPoints)&&g.customPoints.length?g.customPoints:DATA.points)||[];
+      out.results.pointsEnd=Math.max(10,points.reduce(function(m,p,i){return p>0?i+1:m;},0));
+      out.results.drivers=out.drivers.map(function(d){var bits=(d.name||'').trim().split(/\s+/);return{id:d.id,name:d.name,last:bits[bits.length-1]||d.name,team:d.team,color:d.color,mine:d.isPlayer};});
+      var compactRace=function(r,key,index){
+        var short=(r.location||r.country||(r.name||('R'+(index+1))).replace(' Grand Prix','')).toString();
+        if(short.length>5) short=short.slice(0,3).toUpperCase();
+        return {round:index+1,name:r.name||('Round '+(index+1)),short:short,entries:(r[key]||[]).map(function(x){return{id:x.driverId,pos:x.position||0,dnf:!!x.dnf};})};
+      };
+      (g.calendar||[]).forEach(function(r,i){
+        if(r.raceDone&&r.raceResult&&r.raceResult.length) out.results.gp.push(compactRace(r,'raceResult',i));
+        if(r.sprintDone&&r.sprintResult&&r.sprintResult.length) out.results.sprint.push(compactRace(r,'sprintResult',i));
+      });
+      var allEntries=[]; out.results.gp.concat(out.results.sprint).forEach(function(r){allEntries=allEntries.concat(r.entries||[]);});
+      var observed=allEntries.reduce(function(m,x){return Math.max(m,x.pos||0);},0);
+      out.results.posMax=Math.max(22,(g.teams||[]).length*2,points.length,observed);
+    } catch(e){}
+    // Reuse the established scoring/countback helpers, but pass plain data into the
+    // iframe so Team HQ remains isolated from mutable game objects.
+    try {
+      var pg=UI._buildSeasonProgression&&UI._buildSeasonProgression();
+      if(pg) out.progression={season:pg.season,labels:(pg.labels||[]).slice(),drivers:(pg.drivers||[]).map(function(s){return{id:s.id,name:s.name,color:s.color,teamId:s.teamId,cum:(s.cum||[]).slice(),final:s.final||0,isPlayer:!!s.isPlayer};}),teams:(pg.teams||[]).map(function(s){return{id:s.id,name:s.name,color:s.color,cum:(s.cum||[]).slice(),final:s.final||0,isPlayer:!!s.isPlayer};})};
+    } catch(e){}
+    try {
+      var hh=UI._getPlayerQualiH2H&&UI._getPlayerQualiH2H();
+      if(hh){
+        var recent=function(list){return(list||[]).map(function(r){return{raceName:r.raceName||'',season:r.season||'',aPos:r.aPos,bPos:r.bPos,type:r.type||'',sortKey:r.sortKey||0};});};
+        out.h2h={aName:hh.a.name,bName:hh.b.name,aRaceWins:hh.aRaceWins||0,bRaceWins:hh.bRaceWins||0,raceSessions:hh.raceSessions||0,raceTies:hh.raceTies||0,aGpWins:hh.aGpWins||0,bGpWins:hh.bGpWins||0,gpSessions:hh.gpSessions||0,gpTies:hh.gpTies||0,aSprintRaceWins:hh.aSprintRaceWins||0,bSprintRaceWins:hh.bSprintRaceWins||0,sprintRaceSessions:hh.sprintRaceSessions||0,sprintRaceTies:hh.sprintRaceTies||0,aSprintWins:hh.aSprintWins||0,bSprintWins:hh.bSprintWins||0,sprintSessions:hh.sprintSessions||0,sprintTies:hh.sprintTies||0,recentRace:recent(hh.recentRace),recentQuali:recent(hh.recentQuali),recentSprintRace:recent(hh.recentSprintRace)};
+      }
+    } catch(e){}
     try { var pr=(g.calendar||[]).filter(function(r){return r.raceDone;}), mine=[]; pr.forEach(function(r){mine=mine.concat((r.raceResult||[]).filter(function(x){return String(x.teamId)===String(pid);}));}); var fin=mine.filter(function(x){return !x.dnf&&x.position!=null;}); out.stats={races:pr.length,wins:fin.filter(function(x){return x.position===1;}).length,podiums:fin.filter(function(x){return x.position<=3;}).length,best:fin.length?Math.min.apply(null,fin.map(function(x){return x.position;})):'—',dnfs:mine.filter(function(x){return x.dnf;}).length}; } catch(e){}
     return out;
   };
@@ -33921,46 +34041,10 @@ window._pwHandleOrder = function(code, val){
   };
   window._hqEnrichStandings=function(){
     try {
-      window._hqEnsureStyles();
-      var esc=window._hqEscape, data=window._hqRC&&window._hqRC.data||{}, d=data.standings||{}, stats=d.stats||{};
-      // -- recent results (top-3 podium per race) --
-      var res=(d.results||[]).map(function(r){
-        return '<div class="mkr"><b>'+esc(r.name)+'</b><span class="fs11 mut">'+esc((r.podium||[]).join(' · '))+'</span></div>';
-      }).join('')||'<div class="tele mut">No completed race results yet.</div>';
-      // -- points progression: cumulative line chart + per-round rows --
-      var prog=d.progression||[], chart='';
-      if(prog.length){
-        var W=560,H=170,P=30,cum=0;
-        var pts=prog.map(function(r){ cum+=(r.points||0); return cum; });
-        var max=Math.max(1,cum);
-        var X=function(i){ return prog.length>1 ? P+i*(W-2*P)/(prog.length-1) : W/2; };
-        var Y=function(v){ return H-P-(v/max)*(H-2*P); };
-        var path=pts.map(function(v,i){ return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1); }).join(' ');
-        var grid=[0.25,0.5,0.75,1].map(function(f){ var y=Y(max*f).toFixed(1); return '<line x1="'+P+'" y1="'+y+'" x2="'+(W-P)+'" y2="'+y+'" stroke="rgba(15,18,24,.08)"/><text x="'+(P-6)+'" y="'+(+y+3)+'" text-anchor="end" font-size="9" fill="var(--mut)">'+Math.round(max*f)+'</text>'; }).join('');
-        var dots=pts.map(function(v,i){ return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3.5" fill="var(--red)"><title>'+esc(prog[i].name)+' · +'+(prog[i].points||0)+' pts ('+v+' total)</title></circle>'; }).join('');
-        chart='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;margin-top:10px" role="img" aria-label="Cumulative points by round">'+grid+'<path d="'+path+'" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linejoin="round"/>'+dots+'</svg>';
-      }
-      var progRows=prog.slice().reverse().map(function(r,i){
-        return '<div class="mkr"><span>R'+(prog.length-i)+' · '+esc(r.name)+'</span><b class="mono">+'+(r.points||0)+' pts</b></div>';
-      }).join('')||'<div class="tele mut">Season progression will appear after racing begins.</div>';
-      // -- teammate head-to-head (same data the Drivers screen uses) --
-      var h2h='', HH=data.driversScreen&&data.driversScreen.h2h;
-      if(HH){
-        var seg=function(lbl,S){
-          var tot=Math.max(1,(S.a||0)+(S.b||0)+(S.ties||0));
-          return '<div class="fs11 mut" style="margin-top:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">'+esc(lbl)+' · '+(S.n||0)+' sessions</div>'
-            + '<div style="display:flex;height:9px;border-radius:9px;overflow:hidden;background:#e4e7ec;margin-top:6px"><span style="width:'+Math.round((S.a||0)/tot*100)+'%;background:var(--red)"></span><span style="width:'+Math.round((S.ties||0)/tot*100)+'%;background:#b7bdc9"></span><span style="width:'+Math.round((S.b||0)/tot*100)+'%;background:var(--blu)"></span></div>'
-            + '<div class="fx ac jb fs11" style="margin-top:5px"><span>'+esc(HH.aName)+' <b class="mono">'+(S.a||0)+'</b></span>'+((S.ties||0)?'<span class="mut">'+(S.ties||0)+' tied</span>':'')+'<span><b class="mono">'+(S.b||0)+'</b> '+esc(HH.bName)+'</span></div>';
-        };
-        h2h='<div class="tele" style="margin-top:14px"><b>Teammate Head-to-Head</b>'+seg('Qualifying',HH.quali||{})+seg('Race',HH.race||{})+'</div>';
-      }
-      var tiles=[['Races',stats.races],['Wins',stats.wins],['Podiums',stats.podiums],['Best Finish',stats.best],['DNFs',stats.dnfs]].map(function(x){
-        return '<div class="putile"><div class="k">'+esc(x[0])+'</div><div class="v">'+(x[1]==null?'—':esc(x[1]))+'</div></div>';
-      }).join('');
-      window._hqAddPanel('standings','hq-standings-detail','Results, Progression & Stats',
-        '<div class="cols2"><div><div class="tele"><b>Recent Results</b><div style="margin-top:8px">'+res+'</div></div></div>'
-        + '<div><div class="tele"><b>Points Progression</b>'+chart+'<div style="margin-top:8px">'+progRows+'</div></div>'+h2h+'</div></div>'
-        + '<div class="statg" style="margin-top:14px">'+tiles+'</div>');
+      var fr=frame(),doc=fr&&fr.contentDocument;if(!doc)return;
+      // All standings detail is now native to the shell. Remove a stale summary panel
+      // left behind by an older render instead of duplicating the same information.
+      var old=doc.getElementById('hq-standings-detail');if(old)old.remove();
     } catch(e){}
   };
   window._hqEnrichScouting=function(){
