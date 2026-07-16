@@ -24724,11 +24724,12 @@ const sponsorInc=sumSponsorIncome(sponsors2);
         ${[
     ['v3.0','July 2026',[
             'A completely new look and feel. Team HQ is now the default home for F1 Dynasty, with a redesigned landing page, a live management dashboard and a consistent modern interface across all ten management screens. Standings, Schedule, Drivers, Car, Finance, Teams, Staff, Scouting, Academy and History all read directly from your real save, and the previous interface remains available with ?ui=classic.',
-            'Weekly Challenge progress is now visible throughout the run. The dashboard shows rounds completed, the target round, your next race, a live score and the featured Grand Prix finish line. The challenge completes automatically when that Grand Prix is finished; the final score is every point earned by both cars from Round 1 through the target Grand Prix, including sprints. The public challenge can rotate after race week without invalidating a saved run.',
+            'Weekly Challenge progress is now visible throughout the run. The dashboard shows rounds completed, the target round, your next race, a live score and the featured Grand Prix finish line. The challenge completes automatically when that Grand Prix is finished; the final score is every point earned by both cars from Round 1 through the target Grand Prix, including sprints. Completed results can be shared from the dashboard at any time, including through the device share sheet or directly to r/f1dynasty. The public challenge can rotate after race week without invalidating a saved run.',
+            'The All Drivers tab is restored in the redesigned Drivers page, with every active race driver, reserve and free agent together in one sortable list. Driver profiles remain available directly from every row.',
             'Weekly Challenge, tied to the real F1 calendar. Every real race week the landing page features that Grand Prix: everyone gets the same team on Hard difficulty and races a fresh career up to it. Your score is every point the team has scored by the end of that Grand Prix, sprints included, so your development calls and strategy over the run-in all count. When it is done you get a share card to copy straight onto r/f1dynasty. During the real off-season the challenge rotates weekly through the calendar instead.',
             'The whole offseason now lives inside Team HQ. Scouting setup, power-unit contracts, sponsor negotiation, driver extensions, free-agent signings and the pre-season checklist all happen directly on the Offseason screen, with inline terms and visible confirmations.',
             'Hall of Fame and all-time records. The History screen now has a record book: all-time most titles, wins, poles, podiums and points across every driver your save has ever known, plus all-time constructor championships. Retired greats (a title, 10+ wins or 25+ podiums) are inducted into the Hall of Fame with their full career line, and their induction makes the news when they hang up the helmet.',
-            'Save backups and safer save slots. Settings can download your full career as a file and import it on another device. Starting a sixth career now clearly names the save that would be overwritten and requires a second confirmation instead of silently replacing it.',
+            'Save backups and safer save slots. Settings can download your full career as a file and import it on another device, and every save on the homepage now has a confirmed Delete action. Starting a sixth career clearly names the save that would be overwritten and requires a second confirmation instead of silently replacing it.',
             'Major balance and quality-of-life work since the v2.6.2 live release: Hard and Nightmare stay meaningful across long careers, race gaps and traffic behave more naturally, player development rate can recover, academy recruits match their nationality, upgrade popups show planned versus delivered gains, sponsor renewals return to the correct pre-season screen, and Team HQ actions now remain inside the new interface.'
     ]],
     ['v2.6.4','July 2026',[
@@ -32098,6 +32099,13 @@ window._pwHandleOrder = function(code, val){
 <span class="lcomarr">↗</span>
 </button>
 </div>`);
+      // The redesigned landing screen originally omitted the classic save-delete control.
+      // Keep both actions explicit so Continue remains the primary action and deletion cannot
+      // happen from an accidental tap.
+      _hq = _hq.replace(
+        `        + '<button class="lsavego" data-continue="'+esc(s.id)+'">Continue ▶</button></div>';`,
+        `        + '<div class="lsaveactions"><button class="lsavego" data-continue="'+esc(s.id)+'">Continue ▶</button><button class="lsavedel" data-act="deleteSave" data-arg="'+esc(s.id)+'" aria-label="Delete '+esc(s.team)+' save">Delete</button></div></div>';`
+      );
       // Correct the team OVR ring stops and keep the HQ car screen as the single car surface.
       _hq = _hq.replace('style="background:conic-gradient(\'+c+\' \'+t.ovr+\'%,#e8eaef 0)"', 'style="background:conic-gradient(\'+c+\' 0 \'+t.ovr+\'%,#e8eaef \'+t.ovr+\'% 100%)"');
       _hq = _hq.replace('<div class="fx gap18" style="align-items:flex-end;margin-top:8px">', '<div class="fx gap18" style="align-items:flex-start;margin-top:8px">');
@@ -32105,8 +32113,43 @@ window._pwHandleOrder = function(code, val){
       _hq = _hq.replace('<div class="fx gap18" style="align-items:flex-start;margin-top:8px">', '<div class="hq-champ-row">');
       _hq = _hq.replace('<div style="display:flex;flex-direction:column"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POSITION</div>', '<div class="hq-champ-stat"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POSITION</div>');
       _hq = _hq.replace('<div style="padding-top:2px"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POINTS</div>', '<div class="hq-champ-stat"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POINTS</div>');
-      _hq = _hq.replace('</style>', '.hq-champ-row{display:grid!important;grid-template-columns:92px minmax(130px,1fr)!important;gap:26px!important;align-items:start!important;margin-top:8px}.hq-champ-stat{display:flex;flex-direction:column;align-items:flex-start;min-width:0}.screen[data-screen="standings"] .tower{background:#fff!important;border:1px solid #dfe3e9!important}.screen[data-screen="standings"] .tower .conr,.screen[data-screen="standings"] .tower .drvr{color:#151922!important;border-color:#e3e6eb!important}.screen[data-screen="standings"] .tower .conr:not(.me) .fw7,.screen[data-screen="standings"] .tower .drvr:not(.me) .fw7{color:#151922!important}.screen[data-screen="standings"] .tower .mono{color:#4d5563!important}.screen[data-screen="finance"] .mkr{grid-template-columns:minmax(180px,1fr) minmax(96px,130px) minmax(110px,130px) 82px!important;gap:14px!important}.screen[data-screen="finance"] .mkr>*{min-width:0}.screen[data-screen="finance"] .mkr .fs11{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>');
+      _hq = _hq.replace('</style>', '.hq-champ-row{display:grid!important;grid-template-columns:92px minmax(130px,1fr)!important;gap:26px!important;align-items:start!important;margin-top:8px}.hq-champ-stat{display:flex;flex-direction:column;align-items:flex-start;min-width:0}.lsaveactions{display:flex;align-items:stretch;gap:7px;flex:none}.lsavedel{appearance:none;border:1px solid rgba(232,17,45,.25);background:#fff;color:#b5152a;border-radius:8px;padding:9px 11px;font:700 11px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer}.lsavedel:hover{background:#fff1f3;border-color:#e8112d}.hqsharebtn{width:100%;margin-top:13px;padding:10px 12px;border:1px solid rgba(232,17,45,.24);border-radius:8px;background:#fff;color:var(--red);font:800 12px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer}.hqsharebtn:hover{background:#fff2f4}@media(max-width:600px){.lsave{align-items:flex-start!important;flex-wrap:wrap}.lsavein{min-width:calc(100% - 18px)!important}.lsaveactions{width:100%;padding-left:12px}.lsaveactions .lsavego{flex:1}.lsavedel{padding-left:14px;padding-right:14px}}.screen[data-screen="standings"] .tower{background:#fff!important;border:1px solid #dfe3e9!important}.screen[data-screen="standings"] .tower .conr,.screen[data-screen="standings"] .tower .drvr{color:#151922!important;border-color:#e3e6eb!important}.screen[data-screen="standings"] .tower .conr:not(.me) .fw7,.screen[data-screen="standings"] .tower .drvr:not(.me) .fw7{color:#151922!important}.screen[data-screen="standings"] .tower .mono{color:#4d5563!important}.screen[data-screen="finance"] .mkr{grid-template-columns:minmax(180px,1fr) minmax(96px,130px) minmax(110px,130px) 82px!important;gap:14px!important}.screen[data-screen="finance"] .mkr>*{min-width:0}.screen[data-screen="finance"] .mkr .fs11{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>');
       _hq = _hq.replace("document.addEventListener('input', function(e){", "document.addEventListener('input', function(e){ if(e.target&&e.target.dataset&&e.target.dataset.quarter){ emit('setQuarterDev',{qi:parseInt(e.target.dataset.quarter,10)||0,key:e.target.dataset.key,value:parseInt(e.target.value,10)||0}); return; }");
+      _hq = _hq.replace('    // ---- Season Results tab: one card per race, your drivers front and centre ----', String.raw`    // ---- All Drivers tab: the complete active F1 field, including reserves and free agents ----
+    var allSortFns = {
+      ovr:function(a,b){return (b.ovr||0)-(a.ovr||0);}, pace:function(a,b){return (b.pace||0)-(a.pace||0);},
+      quali:function(a,b){return (b.quali||0)-(a.quali||0);}, con:function(a,b){return (b.consistency||0)-(a.consistency||0);},
+      wet:function(a,b){return (b.wet||0)-(a.wet||0);}, age:function(a,b){return (a.age||0)-(b.age||0);},
+      pts:function(a,b){return (b.points||0)-(a.points||0);}
+    };
+    var allSortKey=allSortFns[sortKey]?sortKey:'ovr';
+    var allDrivers=(D.all||[]).slice().sort(allSortFns[allSortKey]);
+    var allTh=function(k,lbl,hideCls){return '<button class="famth'+(allSortKey===k?' on':'')+(hideCls?' '+hideCls:'')+'" data-fasort="'+k+'">'+lbl+(allSortKey===k?' ▼':'')+'</button>';};
+    var allHead='<div class="fam hd"><span class="famth" style="text-align:left;cursor:default">DRIVER</span>'
+      +allTh('pace','PACE','famh2')+allTh('quali','QUAL','famh2')+allTh('con','CON','famh2')+allTh('wet','WET','famh2')
+      +allTh('ovr','OVR')+allTh('pts','PTS')+'<span class="famth" style="cursor:default">STATUS</span><span class="famth" style="cursor:default"></span></div>';
+    var allRows=allDrivers.map(function(r){
+      var status=r.freeAgent?'FREE AGENT':(r.reserve?'RESERVE':'RACE SEAT');
+      var statusCol=r.freeAgent?'var(--grn)':(r.reserve?'var(--amb)':'var(--mut)');
+      return '<div class="fam"'+(r.mine?' style="background:rgba(232,17,45,.035)"':'')+'>'
+        +'<div style="min-width:0"><div class="fw7 fs13" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(r.traitIcon?'<span title="'+esc(r.traitLabel||'')+'">'+r.traitIcon+'</span> ':'')+esc(r.name)+(r.reserve?' <span class="chipN" style="font-size:8px">RSV</span>':'')+'</div><div class="fs11 mut" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.nat||'')+' · Age '+r.age+' · '+esc(r.freeAgent?'Available':r.team||'Unassigned')+'</div></div>'
+        +'<span class="mono fs12 tc famh2">'+r.pace+'</span><span class="mono fs12 tc famh2">'+r.quali+'</span><span class="mono fs12 tc famh2">'+r.consistency+'</span><span class="mono fs12 tc famh2">'+r.wet+'</span>'
+        +'<span class="fw8 mono tc fs14">'+r.ovr+'</span><span class="mono fs12 fw7 tc">'+r.points+'</span>'
+        +'<span class="fs10 fw8" style="text-align:right;color:'+statusCol+'">'+status+'</span>'
+        +'<div class="fx" style="justify-content:flex-end"><button class="renew ghost" data-act="viewDriver" data-arg=\''+argOf({id:r.id})+'\'>VIEW</button></div></div>';
+    }).join('')||emptyState('No active drivers found.');
+    var allHtml=secH('All Drivers · '+allDrivers.length+' Active')
+      +'<div class="fs12 mut" style="margin:-6px 0 14px">Every current race driver, reserve and free agent. Click a column header to sort or View for the full profile.</div>'
+      +'<div class="card">'+allHead+allRows+'</div>';
+    // ---- Season Results tab: one card per race, your drivers front and centre ----`);
+      _hq = _hq.replace(
+        "subtabs('drivers',[['squad','Race Drivers',(D.race||[]).length],['market','Free Agents',(D.market||[]).length],['results','Results',(D.history||[]).length]])",
+        "subtabs('drivers',[['squad','Race Drivers',(D.race||[]).length],['all','All Drivers',(D.all||[]).length],['market','Free Agents',(D.market||[]).length],['results','Results',(D.history||[]).length]])"
+      );
+      _hq = _hq.replace(
+        "+ tabpanel('drivers','squad',squadHtml)\n      + tabpanel('drivers','market',marketHtml)",
+        "+ tabpanel('drivers','squad',squadHtml)\n      + tabpanel('drivers','all',allHtml)\n      + tabpanel('drivers','market',marketHtml)"
+      );
       _hq = _hq.replace(/    var wcHtml='';if\(D\.challenge\)\{[^\n]+\}/, String.raw`    var wcHtml='';
     if(D.challenge){
       var W=D.challenge, status=W.done?'COMPLETE':'IN PROGRESS';
@@ -32121,6 +32164,7 @@ window._pwHandleOrder = function(code, val){
         + '<div class="fx jb fs11" style="gap:12px;color:var(--mut)"><span>Round progress</span><b style="color:var(--ink)">'+esc(W.progress)+'%</b></div>'
         + '<div class="fs12" style="margin-top:11px;line-height:1.55;color:var(--ink)"><b>'+esc(W.finishText||'')+'</b> '+esc(W.scoreText||'')+'</div>'
         + (W.publicWindow?'<div class="fs11 mut" style="margin-top:7px;line-height:1.45">'+esc(W.publicWindow)+'</div>':'')
+        + (W.done?'<button class="hqsharebtn" data-act="shareChallenge">↗ Share challenge result</button>':'')
         + '</div>';
     }`);
       _hq = _hq.replace(/    var canRace = N\.canRace !== false;[\s\S]*?    var C = N\.circuit, circuitHtml='';/, String.raw`    var canRace = N.canRace !== false;
@@ -32435,9 +32479,9 @@ window._pwHandleOrder = function(code, val){
       } catch(e){}
       return { landing:{ saves:saves, teams:teams, selectedTeam:sel, challenge:challenge, patchVersion:'3.0', whatsNew:[
         {tag:'NEW', text:'All-new look and feel: a redesigned Team HQ, live dashboard and consistent management screens'},
-        {tag:'NEW', text:'Weekly Challenge tracker: live score, rounds completed, next race and a clear featured-GP finish line'},
+        {tag:'NEW', text:'Weekly Challenge tracker: live score, rounds completed, a clear finish line and shareable final results'},
         {tag:'NEW', text:'The whole offseason now lives in Team HQ, with inline sponsor deals, contract terms, scouting tiers and a Power Unit hub'},
-        {tag:'NEW', text:'Hall of Fame, all-time records and safer downloadable save backups'},
+        {tag:'NEW', text:'Hall of Fame, all-time records, downloadable backups and confirmed save deletion'},
         {tag:'FIX', text:'Since v2.6.2: stronger difficulty, dev-rate recovery, nationality-correct academy names and smoother race behaviour'},
         {tag:'FIX', text:'Safer careers: a 6th save warns before overwriting, sponsor renewals return correctly and upgrade results are clearer'}
       ], cloudSave:{
@@ -32528,8 +32572,19 @@ window._pwHandleOrder = function(code, val){
         return {id:d.id,name:d.name||'',age:d.age||0,nat:nat2(d),ovr:R(d.rating),potential:R(d.potential),potKnown:!!scoutedIds[String(d.id)],asking:R(d.salary),pace:R(d.racePace),quali:R(d.qualifying),consistency:R(d.consistency),wet:R(d.wet),aggression:R(d.aggression),marketability:R(d.marketability),trait:d.trait||'',traitIcon:td?td.icon:'',traitLabel:td?td.label:'',points:R(d.seasonPoints)};
       });
     }catch(e){}
+    // Match the classic All tab: every active F1 race driver, reserve and free agent in one
+    // sortable list. Academy juniors and feeder-series prospects retain their own scouting
+    // surfaces and are deliberately excluded here.
+    var all=[]; try {
+      all=(g.drivers||[]).filter(function(d){ return d&&!d.retired&&!d.isProspect&&!d.isJunior; }).map(function(d){
+        var tm=d.teamId?T_(d.teamId):null;
+        var td=((typeof DATA!=='undefined'&&DATA.traitDefs)||{})[d.trait]||null;
+        return { id:d.id, name:d.name||'', age:d.age||0, nat:nat2(d), ovr:R(d.rating), pace:R(d.racePace), quali:R(d.qualifying), consistency:R(d.consistency), wet:R(d.wet), aggression:R(d.aggression), marketability:R(d.marketability), points:R(d.seasonPoints), team:tm&&tm.name||'', teamColor:tm&&tm.color||'#8b91a0', reserve:!!d.isReserve, freeAgent:!d.teamId, mine:String(d.teamId)===String(pid), years:d.contract||0, traitIcon:td?td.icon:'', traitLabel:td?td.label:'' };
+      });
+    } catch(e){}
     return { race: mine.slice(0,2).map(function(d){ return { id:d.id, name:d.name||'', code:dcode(d.name), nat:nat2(d), age:d.age||0, ovr:R(d.rating), potential:R(d.potential), pace:R(d.racePace), quali:R(d.qualifying), consistency:R(d.consistency), wet:R(d.wet), aggression:R(d.aggression), marketability:R(d.marketability), trait:d.trait||'', years:d.contract||0, salary:d.salary||0, morale:R(d.morale), points:R(d.seasonPoints), wins:R(d.wins), podiums:R(d.podiums), poles:R(d.poles), atRisk:(d.contract||0)<=1 }; }),
              reserve: res.map(function(d){ return { id:d.id, name:d.name||'', code:dcode(d.name), nat:nat2(d), age:d.age||0, ovr:R(d.rating), potential:R(d.potential), pace:R(d.racePace), quali:R(d.qualifying), consistency:R(d.consistency), wet:R(d.wet), aggression:R(d.aggression), marketability:R(d.marketability), trait:d.trait||'', years:d.contract||0, salary:d.salary||0, morale:R(d.morale) }; }),
+             all: all,
              medical: med,
              h2h: (function(){
                try {
@@ -32842,19 +32897,45 @@ window._pwHandleOrder = function(code, val){
         + '<div style="font-size:12px;color:var(--tx3);margin-bottom:12px">'+(t.name||'')+' \u00b7 through the '+ch.gp+'</div>'
         + (ch.raceLine?'<div style="font-size:12px;font-weight:600;margin-bottom:14px">Race day: '+ch.raceLine+(ch.weekendPts!=null?' \u00b7 '+ch.weekendPts+' pts':'')+'</div>':'')
         + '<div style="font-size:11px;color:var(--tx3);background:var(--bg);border:1px dashed var(--bd);border-radius:8px;padding:10px;white-space:pre-wrap;margin-bottom:14px">'+String(ch.shareText||'').replace(/</g,'&lt;')+'</div>'
-        + '<button id="f1d-ch-copy" class="btn btn-red" style="width:100%;padding:12px;font-size:14px;margin-bottom:8px">Copy score for r/f1dynasty</button>'
+        + '<button id="f1d-ch-share" class="btn btn-red" style="width:100%;padding:12px;font-size:14px;margin-bottom:8px">↗ Share result</button>'
+        + '<button id="f1d-ch-reddit" class="btn btn-outline" style="width:100%;padding:10px;font-size:13px;margin-bottom:8px">Post on r/f1dynasty</button>'
         + '<button class="btn btn-outline" style="width:100%;padding:10px;font-size:13px" onclick="document.getElementById(\'f1d-ch-modal\').remove()">Keep racing</button>'
         + '</div>';
       document.body.appendChild(ov);
-      var cb = ov.querySelector('#f1d-ch-copy');
-      if(cb) cb.onclick = function(){
-        function done(){ cb.textContent = 'Copied! Paste it on r/f1dynasty'; }
-        try { navigator.clipboard.writeText(ch.shareText).then(done, function(){ fallback(); }); }
-        catch(e){ fallback(); }
-        function fallback(){ try { var ta=document.createElement('textarea'); ta.value=ch.shareText; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); } catch(e2){} }
-      };
+      var sb = ov.querySelector('#f1d-ch-share');
+      if(sb) sb.onclick = function(){ share(sb); };
+      var rb = ov.querySelector('#f1d-ch-reddit');
+      if(rb) rb.onclick = function(){ postReddit(); };
     }
-    return { current:current, progress:progress, check:check, showResult:showResult };
+    function copyShareText(text, button){
+      function done(){
+        if(button) button.textContent = 'Copied! Paste anywhere';
+        try { UI.toast('Challenge result copied to your clipboard.','success'); } catch(e){}
+      }
+      function fallback(){
+        try { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+        catch(e2){ try { UI.toast('Could not copy the result on this device.','error'); } catch(e3){} }
+      }
+      try { navigator.clipboard.writeText(text).then(done, fallback); } catch(e){ fallback(); }
+    }
+    function share(button){
+      var g=State.game, ch=g&&g.weeklyChallenge;
+      if(!ch || !ch.done) return;
+      var text=ch.shareText||('F1 Dynasty Weekly Challenge: '+ch.score+' points');
+      if(navigator.share){
+        navigator.share({ title:'F1 Dynasty Weekly Challenge', text:text }).then(function(){
+          if(button) button.textContent='Shared!';
+        }).catch(function(err){ if(!err || err.name!=='AbortError') copyShareText(text,button); });
+      } else copyShareText(text,button);
+    }
+    function postReddit(){
+      var g=State.game, ch=g&&g.weeklyChallenge;
+      if(!ch || !ch.done) return;
+      var title='F1 Dynasty Weekly Challenge — '+ch.score+' points at the '+ch.gp;
+      var url='https://www.reddit.com/r/f1dynasty/submit?title='+encodeURIComponent(title)+'&text='+encodeURIComponent(ch.shareText||'');
+      window.open(url,'_blank','noopener');
+    }
+    return { current:current, progress:progress, check:check, showResult:showResult, share:share, postReddit:postReddit };
   })();
 
   window._buildHQHistory = function(){
@@ -34144,6 +34225,27 @@ window._pwHandleOrder = function(code, val){
       });
       rc.on('exportSave', function(){ try { (typeof Storage!=='undefined') && Storage.exportSaveFile && Storage.exportSaveFile(); } catch(e){} });
       rc.on('importSaveData', function(p){ p=p||{}; try { if(p.text && typeof Storage!=='undefined' && Storage.importSaveFile) Storage.importSaveFile(p.text); } catch(e){} });
+      rc.on('deleteSave', function(saveId){
+        var sid = (typeof saveId==='string') ? parseInt(saveId,10) : saveId;
+        if(!Number.isInteger(sid) || sid<0) return;
+        var info=null;
+        try { info=Storage.getSaveInfo(sid); } catch(e){}
+        if(!info) return;
+        var label=(info.managerName?info.managerName+' · ':'')+(info.teamName||'this career')+(info.season?', Season '+info.season:'');
+        if(!window.confirm('Delete '+label+'?\n\nThis cannot be undone unless you have downloaded a backup.')) return;
+        try {
+          var current=(Storage._currentSlot&&Storage._currentSlot());
+          Storage.deleteGame(sid);
+          if(current===sid && typeof State!=='undefined') State.game=null;
+          window._hqLastRecap=null;
+          window._hqRC.render(window._buildHQLandingData());
+          window._hqRC.show('landing');
+          window._hqRC.toast('Save deleted','success');
+        } catch(e){ try { window._hqRC.toast('Could not delete that save','error'); } catch(e2){} }
+      });
+      rc.on('shareChallenge', function(){
+        try { if(window._f1dChallenge && window._f1dChallenge.showResult) window._f1dChallenge.showResult(); } catch(e){}
+      });
       rc.on('startChallenge', function(p){
         p=p||{};
         try {
