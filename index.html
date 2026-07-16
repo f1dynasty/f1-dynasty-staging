@@ -7092,6 +7092,9 @@ return {id,name:`${fn} ${ln}`,age:baseAge,nationality:nat,teamId:teamId||null,tr
       scaled.reward = Math.round(o.reward * 0.75);
       return scaled;
     });
+    // Stable copy for the current season. UI rendering can restore this if a migration or
+    // transient state drops boardObjectives, instead of rolling a different random set.
+    g._boardObjectivesSnapshot={season:g.season,items:JSON.parse(JSON.stringify(g.boardObjectives))};
     g.boardObjectivesResult = [];
     return g.boardObjectives;
   },
@@ -24726,6 +24729,7 @@ const sponsorInc=sumSponsorIncome(sponsors2);
             'A completely new look and feel. Team HQ is now the default home for F1 Dynasty, with a redesigned landing page, a live management dashboard and a consistent modern interface across all ten management screens. Standings, Schedule, Drivers, Car, Finance, Teams, Staff, Scouting, Academy and History all read directly from your real save, and the previous interface remains available with ?ui=classic.',
             'Weekly Challenge progress is now visible throughout the run. The dashboard shows rounds completed, the target round, your next race, a live score and the featured Grand Prix finish line. The challenge completes automatically when that Grand Prix is finished; the final score is every point earned by both cars from Round 1 through the target Grand Prix, including sprints. Completed results can be shared from the dashboard at any time, including through the device share sheet or directly to r/f1dynasty. The public challenge can rotate after race week without invalidating a saved run.',
             'The All Drivers tab is restored in the redesigned Drivers page, with every active race driver, reserve and free agent together in one sortable list. Driver profiles remain available directly from every row.',
+            'Race Strategy is fully restored to the redesigned weekend flow. Before qualifying you can plan tyre stints, pit windows, split strategies, ERS deployment and qualifying tyre use; after qualifying, a strategy or an explicit Auto choice is required before entering or simulating the Grand Prix. The dashboard keeps the selected plan visible and lets you change it before the start.',
             'Weekly Challenge, tied to the real F1 calendar. Every real race week the landing page features that Grand Prix: everyone gets the same team on Hard difficulty and races a fresh career up to it. Your score is every point the team has scored by the end of that Grand Prix, sprints included, so your development calls and strategy over the run-in all count. When it is done you get a share card to copy straight onto r/f1dynasty. During the real off-season the challenge rotates weekly through the calendar instead.',
             'The whole offseason now lives inside Team HQ. Scouting setup, power-unit contracts, sponsor negotiation, driver extensions, free-agent signings and the pre-season checklist all happen directly on the Offseason screen, with inline terms and visible confirmations.',
             'Hall of Fame and all-time records. The History screen now has a record book: all-time most titles, wins, poles, podiums and points across every driver your save has ever known, plus all-time constructor championships. Retired greats (a title, 10+ wins or 25+ podiums) are inducted into the Hall of Fame with their full career line, and their induction makes the news when they hang up the helmet.',
@@ -32114,7 +32118,72 @@ window._pwHandleOrder = function(code, val){
       _hq = _hq.replace('<div style="display:flex;flex-direction:column"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POSITION</div>', '<div class="hq-champ-stat"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POSITION</div>');
       _hq = _hq.replace('<div style="padding-top:2px"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POINTS</div>', '<div class="hq-champ-stat"><div class="hudf" style="font-size:9.5px;letter-spacing:.16em;color:#8b91a3;margin-bottom:3px">POINTS</div>');
       _hq = _hq.replace('</style>', '.hq-champ-row{display:grid!important;grid-template-columns:92px minmax(130px,1fr)!important;gap:26px!important;align-items:start!important;margin-top:8px}.hq-champ-stat{display:flex;flex-direction:column;align-items:flex-start;min-width:0}.lsaveactions{display:flex;align-items:stretch;gap:7px;flex:none}.lsavedel{appearance:none;border:1px solid rgba(232,17,45,.25);background:#fff;color:#b5152a;border-radius:8px;padding:9px 11px;font:700 11px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer}.lsavedel:hover{background:#fff1f3;border-color:#e8112d}.hqsharebtn{width:100%;margin-top:13px;padding:10px 12px;border:1px solid rgba(232,17,45,.24);border-radius:8px;background:#fff;color:var(--red);font:800 12px system-ui,-apple-system,Segoe UI,sans-serif;cursor:pointer}.hqsharebtn:hover{background:#fff2f4}@media(max-width:600px){.lsave{align-items:flex-start!important;flex-wrap:wrap}.lsavein{min-width:calc(100% - 18px)!important}.lsaveactions{width:100%;padding-left:12px}.lsaveactions .lsavego{flex:1}.lsavedel{padding-left:14px;padding-right:14px}}.screen[data-screen="standings"] .tower{background:#fff!important;border:1px solid #dfe3e9!important}.screen[data-screen="standings"] .tower .conr,.screen[data-screen="standings"] .tower .drvr{color:#151922!important;border-color:#e3e6eb!important}.screen[data-screen="standings"] .tower .conr:not(.me) .fw7,.screen[data-screen="standings"] .tower .drvr:not(.me) .fw7{color:#151922!important}.screen[data-screen="standings"] .tower .mono{color:#4d5563!important}.screen[data-screen="finance"] .mkr{grid-template-columns:minmax(180px,1fr) minmax(96px,130px) minmax(110px,130px) 82px!important;gap:14px!important}.screen[data-screen="finance"] .mkr>*{min-width:0}.screen[data-screen="finance"] .mkr .fs11{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>');
-      _hq = _hq.replace("document.addEventListener('input', function(e){", "document.addEventListener('input', function(e){ if(e.target&&e.target.dataset&&e.target.dataset.quarter){ emit('setQuarterDev',{qi:parseInt(e.target.dataset.quarter,10)||0,key:e.target.dataset.key,value:parseInt(e.target.value,10)||0}); return; }");
+      _hq = _hq.replace('</head>','<style id="hq-type-lock">.gm,.gm button,.gm input,.gm select,.gm textarea{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}.gm .objlbl{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:650}.gm .objst,.gm .objrw{font-family:"Segoe UI",system-ui,-apple-system,sans-serif}</style></head>');
+      // Academy parity: upgrades, loans and both promotion destinations stay in Team HQ.
+      _hq = _hq.replace(/  function renderAcademy\(\)\{[\s\S]*?(?=\n  function renderTeamsScreen\(\))/, function(){ return String.raw`  function renderAcademy(){
+    var el=body('academy');if(!el)return;var A=TeamHQ.data.academy||{};
+    if(A.founded===false){
+      var tiers=(A.foundTiers||[]).map(function(tr){return '<button class="card cardp" data-act="foundAcademy" data-arg=\''+argOf({tier:tr.index})+'\' style="text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--panel)"><div class="fx ac jb gap10"><div><div class="fw8 fs16">'+esc(tr.label)+'</div><div class="fs11 mut mt4">'+tr.slots+' junior slots</div></div><div class="tc"><div class="fw8 fs18" style="color:var(--amb)">$'+tr.cost+'M</div><div class="fs10 mut hudf">PER YEAR</div></div></div></button>';}).join('');
+      el.innerHTML=secH('Found a Driver Academy')+'<div class="fs13 mut" style="margin:-6px 0 18px;line-height:1.55;max-width:680px">Build a long-term talent pipeline, develop juniors, loan them out and graduate them into reserve or race seats.</div><div class="pgrid">'+tiers+'</div>';return;
+    }
+    var slots=A.slots||{used:0,total:0},next=A.nextTier;
+    var head='<div class="card cardp" style="margin-bottom:20px"><div class="fx ac jb gap12 wrap"><div><div class="fw8 fs18">'+esc(A.name||'Driver Academy')+'</div><div class="fs11 mut mt4">'+esc(A.tier||'Academy')+' · $'+esc(A.annualBudget||0)+'M/yr · '+slots.used+'/'+slots.total+' slots</div></div><div class="fx gap8 wrap">'+tile('Juniors',slots.used,'')+tile('Graduates',A.graduates||0,'gold')+'</div></div>'
+      +(next?'<div class="fx ac jb gap10 wrap" style="margin-top:14px;padding-top:13px;border-top:1px solid var(--line)"><div><b>Upgrade to '+esc(next.label)+'</b><div class="fs11 mut mt4">'+next.slots+' slots · $'+next.cost+'M/yr</div></div><button class="renew" data-act="upgradeAcademy">UPGRADE ACADEMY</button></div>':'<div class="fs11 grn fw7" style="margin-top:13px">Elite academy level reached.</div>')+'</div>';
+    var js=(A.juniors||[]).map(function(j){var arg=argOf({id:j.id,name:j.name}),actions='';
+      if(j.promotionEligible)actions+='<button class="renew" data-act="promoteJunior" data-arg=\''+arg+'\'>PROMOTE TO RESERVE</button><button class="renew ghost" data-act="promoteJuniorRace" data-arg=\''+arg+'\'>RACE SEAT</button>';
+      if(j.loanEligible)actions+='<button class="renew ghost" data-act="loanJunior" data-arg=\''+arg+'\'>ARRANGE LOAN</button>';
+      actions+='<button class="minig" data-act="releaseJunior" data-arg=\''+arg+'\'>Release</button>';
+      return '<div class="pcard" data-act="viewJunior" data-arg=\''+arg+'\'><div class="pstripe"></div><div class="pcb"><div class="fx jb" style="align-items:flex-start;gap:10px"><div class="phex b"><span class="n">'+(j.ovr||'—')+'</span><span class="l">OVR</span></div><div class="f1" style="min-width:0;text-align:right"><div class="pname">'+esc(j.name)+'</div><div class="fx ac gap6 mt6" style="justify-content:flex-end"><span class="natb">'+esc(j.nat||'')+'</span><span class="fs11 mut">Age '+j.age+' · '+esc(j.series||'')+'</span></div></div></div><div class="crow"><span class="chipT">POT '+(j.potential||'—')+'</span><span class="chipN">'+esc(String(j.status||'ACADEMY').toUpperCase())+'</span></div><div style="margin-top:12px"><div class="fx ac jb hudf fs11" style="color:#c4c8d2;margin-bottom:7px"><span>DEVELOPMENT</span><span style="color:#8b91a3">'+(j.progress||0)+'%</span></div><div class="smeter lite" style="height:8px"><div class="smf" style="width:'+(j.progress||0)+'%;background:var(--grn)"></div></div></div><div class="fs11 mut" style="margin-top:10px">'+esc(j.note||'')+(j.promotionEligible?' <b class="grn">Eligible for promotion.</b>':'')+'</div><div class="frow" style="flex-wrap:wrap">'+actions+'</div></div></div>';
+    }).join('')||emptyState('No junior drivers in the academy yet.');
+    var loans=(A.loans||[]).map(function(l){return '<div class="mkr"><b>'+esc(l.driver)+'</b><span class="fs11 mut">On loan at '+esc(l.team)+' · returns next offseason</span><span class="chipN tc">ON LOAN</span></div>';}).join('');
+    el.innerHTML=head+secH('Junior Programme · '+slots.used+' / '+slots.total+' Slots')+'<div class="pgrid" style="margin-bottom:20px">'+js+'</div>'+(slots.used<slots.total?'<button class="gcta2" data-act="signJunior">+ Sign Junior Driver</button>':'<div class="tele mut tc">All academy slots are filled.</div>')+(loans?secH('Loan Programme')+'<div class="card">'+loans+'</div>':'');
+  }
+`; });
+      // Offseason parity: team-principal offers, poaching decisions, owner confidence,
+      // pre-contracts and proactive moves were all absent from the first HQ handover screen.
+      _hq = _hq.replace('    el.innerHTML = rail\n', function(){ return String.raw`    var careerHtml='';
+    if((O.teamOffers||[]).length){careerHtml+=secH('Team Offers')+'<div class="card cardp" style="border-left:4px solid var(--amb)"><div class="fs12 mut mb12">Your results have attracted rival teams. Accepting moves you for the new season.</div>'+(O.teamOffers||[]).map(function(o){return '<div class="upr"><div class="fx ac gap8" style="min-width:0"><span style="width:10px;height:10px;border-radius:50%;background:'+esc(o.color)+'"></span><div><b>'+esc(o.name)+'</b><div class="fs11 mut mt4">P'+o.position+' · Car '+o.car+' · Rel '+o.reliability+' · $'+o.budget+'M</div></div></div><span class="fs11 mut">'+esc((o.drivers||[]).join(' & '))+'</span><button class="renew" data-act="acceptTeamOffer" data-arg=\''+argOf({teamId:o.teamId,name:o.name})+'\'>ACCEPT</button></div>';}).join('')+'<button class="gcta2" data-act="declineTeamOffers" style="margin-top:12px">Decline all and stay</button></div>';}
+    if((O.poachAttempts||[]).length){careerHtml+=secH('Transfer Interest')+'<div class="card cardp" style="border-left:4px solid var(--amb)">'+(O.poachAttempts||[]).map(function(p){return '<div class="upr"><div><b>'+esc(p.driverName)+'</b><div class="fs11 mut mt4">'+esc(p.teamName)+' · $'+p.salary+'M/yr · '+p.years+'yr offer</div></div><span class="chipR">DECISION REQUIRED</span><div class="fx gap6"><button class="renew" data-act="blockPoach" data-arg=\''+argOf({index:p.index})+'\'>KEEP</button><button class="renew ghost" data-act="allowPoach" data-arg=\''+argOf({index:p.index})+'\'>LET GO</button></div></div>';}).join('')+'</div>';}
+    if((O.preContracts||[]).length){careerHtml+=secH('Pre-Contract Agreements')+'<div class="card cardp">'+(O.preContracts||[]).map(function(p){return '<div class="mkr"><b>'+esc(p.driver)+'</b><span class="fs11 mut">'+esc(p.from)+' → '+esc(p.to)+'</span><b class="mono">$'+p.salary+'M/yr</b><span class="chipN">'+p.years+'YR</span></div>';}).join('')+'</div>';}
+    var own=O.owner||{}, ownerHtml=secH('Season Goals & Owner Confidence')+'<div class="card cardp"><div class="fx ac jb gap12 wrap"><div><div class="fs10 fnt hudf">OWNER EXPECTATION</div><div class="fw8 fs17 mt4">'+esc(own.goal||'—')+'</div></div><span class="chipN" style="color:'+(own.total<=-0.5?'var(--red)':own.total>0.2?'var(--grn)':'var(--amb)')+'">'+esc(own.status||'—')+'</span></div><div class="fx gap8 wrap mt16">'+tile('Performance',(own.performance>=0?'+':'')+Number(own.performance||0).toFixed(1),'')+tile('Finances',(own.finances>=0?'+':'')+Number(own.finances||0).toFixed(1),'')+tile('Combined',(own.total>=0?'+':'')+Number(own.total||0).toFixed(1),own.total<=-0.5?'amb':'grn')+'</div>'+(own.total<=-0.5?'<div class="termwarn mt12">The board is watching closely. Strong results and sound finances are essential.</div>':'')+'</div>';
+    var moveRows=(O.moveOptions||[]).map(function(m){var closed=m.tier==='closed';return '<div class="upr"><div class="fx ac gap8"><span style="width:10px;height:10px;border-radius:50%;background:'+esc(m.color)+'"></span><div><b>'+esc(m.name)+'</b><div class="fs11 mut mt4">P'+m.position+' · Car '+m.car+' · '+m.interest+'% interest'+(m.trajectory?(' · trajectory '+(m.trajectory>0?'▲':'▼')+Math.abs(m.trajectory)):'')+'</div></div></div><span class="chipN">'+esc(String(m.tier).toUpperCase())+'</span><button class="renew ghost" data-act="requestTeamMove" data-arg=\''+argOf({teamId:m.teamId})+'\''+(closed?' disabled':'')+'>APPROACH</button></div>';}).join('');
+    var movesHtml=moveRows?secH('Seek a Move')+'<div class="card cardp"><div class="fs12 mut mb12">Approach another constructor about its team-principal seat. Reputation and recent trajectory determine interest.</div>'+moveRows+'</div>':'';
+    el.innerHTML = rail + careerHtml + '<div class="cols2" style="margin-bottom:24px"><div>'+ownerHtml+'</div><div>'+movesHtml+'</div></div>'
+`; });
+      // Restore the classic Dynasty, Race Grid and Achievements history sections natively.
+      _hq = _hq.replace("    el.innerHTML = subtabs('history'", function(){ return String.raw`    var dynastyHtml=emptyState('Complete your first season to begin a Dynasty record.');
+    var DY=H.dynasty;
+    if(DY){var tier=DY.tier||{},db=(DY.breakdown||[]).map(function(b){return '<div class="recrow"><span>'+esc(b.icon)+' '+esc(b.label)+'</span><b class="mono">+'+Number(b.points||0).toLocaleString()+'</b></div>';}).join(''),tr=(DY.constructors||[]).map(function(x){return '<div class="recrow"'+(x.mine?' style="background:#fff0f2;margin:0 -8px;padding-left:8px;padding-right:8px"':'')+'><span><b class="mono mut" style="margin-right:7px">'+x.rank+'</b><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+esc(x.color)+';margin-right:6px"></i>'+esc(x.name)+(x.mine?' <span class="chipT">YOU</span>':x.managed?' <span class="chipN">MANAGED</span>':'')+'<small class="mut" style="display:block;margin-left:28px">'+x.titles+' titles · '+x.wins+' wins</small></span><b class="mono">'+Number(x.score||0).toLocaleString()+'</b></div>';}).join(''),sr=(DY.seasons||[]).map(function(s){return '<div class="mkr"><b>'+s.season+'</b><span class="fw7">P'+s.position+' · '+s.points+' pts</span><span class="fs11 mut">'+s.wins+'W · '+s.podiums+'P · '+s.poles+' poles</span><span>'+(s.constructorChamp?'<span class="chipT">WCC</span>':'')+(s.driverChamp?'<span class="chipT">WDC</span>':'')+'</span></div>';}).join('');
+      dynastyHtml='<div class="card cardp" style="background:linear-gradient(135deg,#10141d,#202633);color:#fff;margin-bottom:20px"><div class="fs10 hudf" style="letter-spacing:.14em;color:#ff8a98">DYNASTY RATING</div><div class="fx ac gap16 wrap mt8"><div class="fw8 mono" style="font-size:46px">'+Number(DY.score||0).toLocaleString()+'</div><div><div class="fw8 fs18" style="color:var(--gold)">'+esc(tier.icon||'🏁')+' '+esc(tier.name||'Building a Legacy')+'</div><div class="fs11" style="color:#aeb4c0;margin-top:3px">'+esc(tier.blurb||'')+'</div></div></div><div class="smeter" style="margin-top:15px"><div class="smf" style="width:'+(DY.progress||0)+'%"></div></div><div class="fs10" style="color:#aeb4c0;margin-top:5px">'+(DY.nextTier?Number(DY.pointsToNext||0).toLocaleString()+' points to '+esc(DY.nextTier.name):'Maximum prestige reached')+'</div></div><div class="fx gap8 wrap" style="margin-bottom:20px">'+tile('Seasons',DY.stats.seasons,'')+tile('WDC',DY.stats.driverTitles,'gold')+tile('WCC',DY.stats.constructorTitles,'gold')+tile('Wins',DY.stats.wins,'')+tile('Best','P'+DY.stats.best,'grn')+tile('Avg Finish','P'+DY.stats.average,'')+'</div><div class="cols2"><div>'+secH('How the Rating Is Built')+'<div class="card cardp">'+db+'</div></div><div>'+secH('Greatest Constructors')+'<div class="card cardp">'+tr+'</div></div></div>'+secH('Your Seasons')+'<div class="card">'+sr+'</div>';
+    }
+    var gridHtml=emptyState('Race grid data is recorded when a season finishes.');
+    var GS=H.raceGridSeasons||[];
+    if(GS.length){var gy=TeamHQ._gridYear||GS[0].season,gs=GS.find(function(x){return String(x.season)===String(gy);})||GS[0];TeamHQ._gridYear=gs.season;var opts=GS.map(function(x){return '<option value="'+esc(x.season)+'"'+(String(x.season)===String(gs.season)?' selected':'')+'>'+esc(x.season)+'</option>';}).join('');
+      function gridTable(key,label){var races=key==='race'?gs.races:(gs.races||[]).filter(function(r){return r.sprintResult&&r.sprintResult.length;}),heads=races.map(function(r){return '<th title="'+esc(r.name)+'" style="font-size:8px;min-width:27px;text-align:center">'+esc(String(r.name||'').slice(0,3).toUpperCase())+'</th>';}).join(''),rows=(gs.drivers||[]).filter(function(d){return races.some(function(r){return (r[key]||[]).some(function(x){return String(x.id)===String(d.id);});});}).map(function(d){var cells=races.map(function(r){var x=(r[key]||[]).find(function(y){return String(y.id)===String(d.id);});if(!x)return '<td></td>';var p=x.dnf?'R':x.pos,bg=x.dnf?'#dc2626':p===1?'#e0a11b':p===2?'#9ca3af':p===3?'#b87333':p<=6?'#16a34a':p<=10?'#4ade80':'#64748b';return '<td style="padding:2px"><span style="display:flex;width:23px;height:20px;border-radius:4px;background:'+bg+';color:#fff;align-items:center;justify-content:center;font:800 9px system-ui">'+p+'</span></td>';}).join('');return '<tr'+(d.mine?' style="background:#fff0f2"':'')+'><td style="white-space:nowrap;padding-right:10px"><b>'+esc(d.name)+'</b><small class="mut" style="display:block">'+esc(d.team)+' · '+d.points+' pts</small></td>'+cells+'</tr>';}).join('');return '<div style="margin-bottom:20px"><div class="fs10 fnt hudf mb8">'+label+'</div><div class="card cardp" style="overflow-x:auto"><table style="border-collapse:collapse"><thead><tr><th style="text-align:left">Driver</th>'+heads+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';}
+      gridHtml='<div class="fx ac gap8 mb16"><label class="fs11 fw7 mut">SEASON</label><select data-gridyear style="padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:#fff">'+opts+'</select></div>'+gridTable('race','GRAND PRIX')+gridTable('sprintResult','SPRINTS')+'<div class="fs10 mut">Gold P1 · silver P2 · bronze P3 · green points · red retirement</div>';
+    }
+    var achievementHtml=emptyState('Achievements are unavailable for this save.');var AH=H.achievements;
+    if(AH){var cats=[];(AH.items||[]).forEach(function(x){if(cats.indexOf(x.category)<0)cats.push(x.category);});achievementHtml='<div class="card cardp mb16"><div class="fx ac jb"><b>'+AH.done+' of '+AH.total+' unlocked</b><b class="red">'+Math.round(AH.done/Math.max(1,AH.total)*100)+'%</b></div><div class="smeter lite mt8"><div class="smf" style="width:'+Math.round(AH.done/Math.max(1,AH.total)*100)+'%"></div></div></div>'+cats.map(function(cat){return secH(cat)+'<div class="pgrid">'+AH.items.filter(function(x){return x.category===cat;}).map(function(x){return '<div class="card cardp" style="opacity:'+(x.unlocked?1:.48)+';border-color:'+(x.unlocked?'rgba(232,17,45,.28)':'var(--line)')+'"><div class="fx ac gap10"><span style="font-size:24px">'+(x.unlocked?esc(x.icon):'🔒')+'</span><div><b>'+esc(x.name)+'</b><div class="fs11 mut mt4">'+esc(x.desc)+'</div></div>'+(x.unlocked?'<span class="grn fw8" style="margin-left:auto">✓</span>':'')+'</div></div>';}).join('')+'</div>';}).join('');}
+    el.innerHTML = subtabs('history'`; });
+      _hq = _hq.replace("subtabs('history',[['overview','Honours & Seasons',(H.seasons||[]).length],['goat','GOAT'],['records','Records'],['hof','Hall of Fame',(H.hof||[]).length],['ladder','All-Time Ladder',(H.ladder||[]).length]])", "subtabs('history',[['overview','Honours & Seasons',(H.seasons||[]).length],['dynasty','Dynasty'],['goat','GOAT'],['records','Records'],['grid','Race Grid',(H.raceGridSeasons||[]).length],['achievements','Achievements',H.achievements&&H.achievements.done],['hof','Hall of Fame',(H.hof||[]).length],['ladder','All-Time Ladder',(H.ladder||[]).length]])");
+      _hq = _hq.replace("      + tabpanel('history','overview',overviewHtml)\n      + tabpanel('history','goat',goatHtml)", "      + tabpanel('history','overview',overviewHtml)\n      + tabpanel('history','dynasty',dynastyHtml)\n      + tabpanel('history','goat',goatHtml)");
+      _hq = _hq.replace("      + tabpanel('history','records',recHtml)\n      + tabpanel('history','hof',hofHtml)", "      + tabpanel('history','records',recHtml)\n      + tabpanel('history','grid',gridHtml)\n      + tabpanel('history','achievements',achievementHtml)\n      + tabpanel('history','hof',hofHtml)");
+      // Upgrade-window component focus and regulation diversion are gameplay inputs, not
+      // cosmetic detail. Put both controls back into the native Car screen.
+      _hq = _hq.replace("    var windows = '';", function(){ return String.raw`    function focusControls(w,group,title,inactive){
+      var opts=(w.focusOptions&&w.focusOptions[group])||[],cur=(w.focus&&w.focus[group])||'balanced';if(!opts.length)return '';
+      return '<div style="margin:10px 0;padding:9px 10px;background:#f7f8fb;border:1px solid var(--line);border-radius:8px;opacity:'+(inactive?'.48':'1')+'"><div class="fs10 fnt hudf" style="margin-bottom:6px">'+title+(inactive?' · allocate budget above to activate':'')+'</div><div class="fx gap6 wrap">'+opts.map(function(o){var on=cur===o.id;return '<button class="renew'+(on?'':' ghost')+'" data-act="setComponentFocus" data-arg=\''+argOf({qi:w.qi,group:group,value:o.id})+'\''+(inactive?' disabled':'')+'>'+esc(o.label)+(o.rating!=null?' '+o.rating:'')+'</button>';}).join('')+'</div></div>';
+    }
+    function diversionControl(w,disabled){if(!w.canDivert)return '';return '<div style="margin:12px 0;padding:10px 12px;background:#fff7e8;border:1px solid rgba(232,150,26,.35);border-radius:9px"><div class="fw8 fs11" style="color:#9a5a00">New-Reg Diversion · '+esc(w.nextRegsYear)+'</div><div class="fs11 mut mt4">Redirect part of this package to the next regulation concept.</div><label style="display:grid;grid-template-columns:70px 1fr 70px;gap:8px;align-items:center;margin-top:9px"><span class="fs10 mut">Current car</span><input type="range" min="0" max="100" step="10" value="'+(w.diversion||0)+'" data-diversion="'+w.qi+'"'+(disabled?' disabled':'')+'><b class="mono fs11" style="text-align:right">'+(w.diversion||0)+'% new regs</b></label></div>';}
+    var windows = '';`; });
+      _hq = _hq.replace("              + (w.status==='available'?'<button class=\"gcta2\" data-act=\"applyQuarterDev\"", "              + focusControls(w,'aero','Aero Component Focus',disabled||!(w.aero>0)) + focusControls(w,'mechanical','Mechanical Component Focus',disabled||!(w.reliability>0)) + diversionControl(w,disabled)\n              + (w.status==='available'?'<button class=\"gcta2\" data-act=\"applyQuarterDev\"");
+      // Completed and pending scouting reports for current grid drivers were another classic
+      // section that had no HQ destination.
+      _hq = _hq.replace("    el.innerHTML = note + '<div class=\"cols\">", function(){ return String.raw`    var gridBlock='';
+    if((S.gridReports||[]).length||(S.pendingGrid||[]).length){var gr=(S.gridReports||[]).map(function(r){return '<div class="upr"><div><b>'+esc(r.name)+'</b><div class="fs11 mut mt4">'+esc(r.team)+' · Age '+r.age+' · '+esc(r.nat)+'</div></div><span class="chipT">REPORT COMPLETE</span><b class="mono fs15">'+r.result+' OVR</b><button class="renew ghost" data-act="viewDriver" data-arg=\''+argOf({id:r.id,name:r.name})+'\'>VIEW</button></div>';}).join(''),pg=(S.pendingGrid||[]).map(function(r){return '<div class="mkr" style="opacity:.65"><b>'+esc(r.name)+'</b><span class="fs11 mut">Scouts in the field</span><span class="chipN">'+r.remaining+' RACES LEFT</span></div>';}).join('');gridBlock='<div style="margin-top:26px">'+secH('Grid Driver Reports')+'<div class="card cardp">'+gr+pg+'</div></div>';}
+    el.innerHTML = note + '<div class="cols">`; });
+      _hq = _hq.replace("      + '<div style=\"margin-top:26px\">'+secH('Prospect Shortlist · '+((S.prospects||[]).length)+' Discovered')+'<div class=\"card\">'+pros+'</div></div>';", "      + '<div style=\"margin-top:26px\">'+secH('Prospect Shortlist · '+((S.prospects||[]).length)+' Discovered')+'<div class=\"card\">'+pros+'</div></div>' + gridBlock;");
+      _hq = _hq.replace("document.addEventListener('input', function(e){", "document.addEventListener('input', function(e){ if(e.target&&e.target.dataset&&e.target.dataset.diversion!=null){ emit('setQuarterDiversion',{qi:parseInt(e.target.dataset.diversion,10)||0,value:(parseInt(e.target.value,10)||0)/100}); var b=e.target.parentElement&&e.target.parentElement.querySelector('b');if(b)b.textContent=(parseInt(e.target.value,10)||0)+'% new regs';return;} if(e.target&&e.target.dataset&&e.target.dataset.quarter){ emit('setQuarterDev',{qi:parseInt(e.target.dataset.quarter,10)||0,key:e.target.dataset.key,value:parseInt(e.target.value,10)||0}); return; }");
       _hq = _hq.replace('    // ---- Season Results tab: one card per race, your drivers front and centre ----', String.raw`    // ---- All Drivers tab: the complete active F1 field, including reserves and free agents ----
     var allSortFns = {
       ovr:function(a,b){return (b.ovr||0)-(a.ovr||0);}, pace:function(a,b){return (b.pace||0)-(a.pace||0);},
@@ -32170,6 +32239,7 @@ window._pwHandleOrder = function(code, val){
       _hq = _hq.replace(/    var canRace = N\.canRace !== false;[\s\S]*?    var C = N\.circuit, circuitHtml='';/, String.raw`    var canRace = N.canRace !== false;
     var _cta;
     var _bulk = '<div class="fx gap8" style="margin-top:9px">'
+      + '<button class="gcta3" data-act="simQuarter">Sim Quarter</button>'
       + '<button class="gcta3" data-act="simHalf">Sim ½ Season</button>'
       + '<button class="gcta3" data-act="simSeasonEnd">Sim to Season End</button></div>';
     if (N.offseason) {
@@ -32194,6 +32264,148 @@ window._pwHandleOrder = function(code, val){
         + '<button class="gcta2" data-act="simGrandPrix"'+(canRace?'':' disabled')+'>Simulate Grand Prix</button>' + _bulk;
     }
     var C = N.circuit, circuitHtml='';`);
+      // Restore the full pre-race strategy stage in Team HQ. The underlying classic picker is
+      // still the canonical strategy system; the shell shows its state and routes into it.
+      _hq = _hq.replace("    var _cta;\n", String.raw`    var _cta;
+    var _S=N.strategy;
+    var strategyHtml='';
+    if(_S&&_S.available){
+      strategyHtml='<div style="margin:12px 0 14px;padding:10px 12px;border:1px solid '+(_S.ready?'rgba(91,227,154,.35)':'rgba(255,184,77,.42)')+';border-radius:9px;background:'+(_S.ready?'rgba(31,170,94,.10)':'rgba(232,150,26,.10)')+'">'
+        +'<div class="fx ac jb gap10"><div style="min-width:0"><div class="hudf fs10 fw7" style="letter-spacing:.12em;color:'+(_S.ready?'#5be39a':'#ffbd62')+'">RACE STRATEGY</div><div class="fw7 fs13" style="margin-top:3px;color:#fff">'+esc(_S.label||'No strategy set')+'</div></div>'
+        +'<button data-act="openStrategy" style="flex:none;border:1px solid rgba(255,255,255,.22);border-radius:7px;background:rgba(255,255,255,.08);color:#fff;padding:6px 9px;font:700 10px system-ui;cursor:pointer">'+(_S.ready?'CHANGE':'SET PLAN')+'</button></div>'
+        +'<div class="fs11" style="color:#aeb4c0;line-height:1.45;margin-top:5px">'+esc(_S.detail||'')+'</div></div>';
+    }
+`);
+      _hq = _hq.replace("    var C = N.circuit, circuitHtml='';", String.raw`    if(!N.offseason && !N.qualiDone && (!N.isSprintWeekend || N.sprintDone)){
+      _cta=_cta.replace(_bulk,'<button class="gcta2" data-act="openStrategy">Plan Race Strategy &amp; Qualifying Tyres</button>'+_bulk);
+    }
+    if(!N.offseason && N.qualiDone && _S && !_S.ready){
+      _cta='<button class="gcta" data-act="openStrategy"'+(canRace?'':' disabled')+'>Set Race Strategy →<span class="shine"></span></button>'
+        +'<button class="gcta2" data-act="setAutoStrategy"'+(canRace?'':' disabled')+'>Use Auto Strategy (−1.5 pace)</button>'+_bulk;
+    }
+    var C = N.circuit, circuitHtml='';`);
+      _hq = _hq.replace("      + '<div class=\"f1\"></div>'\n      + _cta", "      + strategyHtml\n      + '<div class=\"f1\"></div>'\n      + _cta");
+      _hq = _hq.replace('  // ---- live dashboard (replaces the static mock when TeamHQ.data.dash is supplied) ----', String.raw`
+  // ---- native Team HQ race strategy overlay ----
+  function openStrategyOverlay(){
+    var S=TeamHQ.data.dash&&TeamHQ.data.dash.nextRace&&TeamHQ.data.dash.nextRace.strategy;
+    if(!S||!S.available)return;
+    TeamHQ._strategyDraft=JSON.parse(JSON.stringify(S));
+    renderStrategyOverlay();
+  }
+  function renderStrategyOverlay(){
+    var S=TeamHQ._strategyDraft;if(!S)return;
+    var old=document.getElementById('hqStrategyOverlay');if(old)old.remove();
+    var deg=S.tireDeg>.75?'Very High':S.tireDeg>.55?'High':S.tireDeg>.35?'Medium':'Low';
+    var pass=S.overtakingDiff>.8?'Very Hard':S.overtakingDiff>.6?'Difficult':S.overtakingDiff>.4?'Moderate':'Easy';
+    var optionCard=function(o){
+      var chosen=S.selected===o.id;
+      var bars=(o.stints||[]).map(function(st){return '<span style="flex:'+Math.max(1,st.laps||1)+';min-width:34px;height:20px;border-radius:5px;background:'+esc(st.color||'#777')+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800">'+esc(st.short)+' '+esc(st.laps)+'L</span>';}).join('');
+      var windows=(o.pitWindows||[]).filter(function(_,i){return i%2===0;}).map(function(w,i){return 'L'+w+'\u2013'+o.pitWindows[i*2+1];}).join(' & ');
+      return '<button type="button" data-hqs-plan="'+esc(o.id)+'" style="width:100%;text-align:left;padding:13px;border:'+(chosen?'2px solid var(--red)':'1px solid var(--line)')+';border-radius:11px;background:'+(chosen?'#fff2f4':'#fff')+';color:var(--ink);cursor:pointer">'
+        +'<div class="fx ac jb gap8"><b class="fs13">'+esc(o.label)+'</b>'+(o.recommended?'<span style="font-size:9px;font-weight:800;padding:3px 7px;border-radius:12px;background:#dcfce7;color:#166534">RECOMMENDED</span>':'')+'</div>'
+        +'<div style="display:flex;gap:4px;margin:9px 0">'+bars+'</div><div class="fs11 mut" style="line-height:1.45">'+esc(o.desc||'')+'</div>'
+        +(windows?'<div class="fs10" style="margin-top:6px;color:var(--red);font-weight:700">Pit windows '+esc(windows)+'</div>':'')+'</button>';
+    };
+    var options=(S.options||[]).map(optionCard).join('');
+    var autoChosen=S.selected==='auto';
+    var auto='<button type="button" data-hqs-plan="auto" style="width:100%;text-align:left;padding:13px;border:'+(autoChosen?'2px solid var(--red)':'1px dashed #b7bdc9')+';border-radius:11px;background:'+(autoChosen?'#fff2f4':'#f7f8fb')+';color:var(--ink);cursor:pointer"><b class="fs13">\ud83e\udd16 Auto Strategy</b><div class="fs11 mut" style="margin-top:5px;line-height:1.45">Engineers choose and execute the plan. Convenient, with a \u22121.5 pace penalty for conservative timing.</div></button>';
+    var split=(S.drivers||[]).map(function(d){
+      var opts='<option value="">Same as team strategy</option>'+(S.options||[]).map(function(o){return '<option value="'+esc(o.id)+'"'+(d.strategy===o.id?' selected':'')+'>'+esc(o.label)+'</option>';}).join('')+'<option value="auto"'+(d.strategy==='auto'?' selected':'')+'>Auto</option>';
+      var ers=['conservative','balanced','aggressive'].map(function(v){var on=d.ers===v,l=v==='conservative'?'Conserve':v==='aggressive'?'Attack':'Balanced';return '<button type="button" data-hqs-ers="'+esc(d.id)+'" data-hqs-value="'+v+'" style="flex:1;padding:7px 5px;border:'+(on?'2px solid var(--red)':'1px solid var(--line)')+';border-radius:7px;background:'+(on?'#fff2f4':'#fff')+';font-size:10px;font-weight:800;cursor:pointer">'+l+'</button>';}).join('');
+      var used=!S.qualifyingDone?'<button type="button" data-hqs-used="'+esc(d.id)+'" style="width:100%;margin-top:8px;padding:7px;border:1px solid '+(d.usedTyre?'#e8961a':'var(--line)')+';border-radius:7px;background:'+(d.usedTyre?'#fff7e8':'#fff')+';color:'+(d.usedTyre?'#9a5a00':'var(--mut)')+';font-size:10px;font-weight:800;cursor:pointer">'+(d.usedTyre?'USED TYRES \u00b7 save a fresh race set':'FRESH QUALIFYING TYRES')+'</button>':'';
+      return '<div style="padding:12px;border:1px solid var(--line);border-radius:10px;background:#f7f8fb"><div class="fx ac jb gap8"><div><b>'+esc(d.name)+'</b><div class="fs10 mut mt4">'+(d.gridPos?'Starts P'+esc(d.gridPos)+' \u00b7 ':'')+'ERS Management '+esc(d.ersMgmt)+'</div></div></div><label class="fs10 fw7" style="display:block;margin:10px 0 4px;color:var(--mut)">INDIVIDUAL TYRE PLAN</label><select data-hqs-driver="'+esc(d.id)+'" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)">'+opts+'</select><div class="fs10 fw7" style="margin:10px 0 4px;color:var(--mut)">ERS DEPLOYMENT</div><div class="fx gap6">'+ers+'</div>'+used+'</div>';
+    }).join('');
+    var ov=document.createElement('div');ov.id='hqStrategyOverlay';ov.style.cssText='position:fixed;inset:0;z-index:20000;background:rgba(10,12,18,.72);padding:18px;overflow:auto;display:flex;align-items:flex-start;justify-content:center';
+    ov.innerHTML='<div role="dialog" aria-modal="true" aria-label="Race strategy" style="width:min(920px,100%);background:var(--bg);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.45);overflow:hidden">'
+      +'<div style="padding:18px 20px;background:linear-gradient(120deg,#0c0f15,#1a1e28);color:#fff"><div class="fx ac jb gap12"><div><div class="hudf fs10" style="letter-spacing:.16em;color:#ff8694">RACE STRATEGY</div><h2 style="margin:5px 0 0;font-size:23px">'+esc(S.raceName||'Grand Prix')+'</h2></div><button type="button" data-hqs-close style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 11px;cursor:pointer">\u2715</button></div>'
+      +'<div class="fx gap8 wrap" style="margin-top:13px"><span class="cpill">Tyre wear '+deg+'</span><span class="cpill">Overtaking '+pass+'</span><span class="cpill">Rain risk '+esc(S.weatherRisk)+'%</span><span class="cpill">'+esc(S.laps)+' laps</span></div></div>'
+      +'<div style="padding:18px 20px"><div class="sec"><i></i><span class="lbl">Team Tyre Strategy</span><span class="ln"></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">'+options+auto+'</div>'
+      +'<div class="sec" style="margin-top:22px"><i></i><span class="lbl">Split Strategy, ERS &amp; Qualifying Tyres</span><span class="ln"></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px">'+split+'</div>'
+      +'<div id="hqStrategyMsg" class="fs11" style="min-height:18px;margin-top:12px;color:var(--red);font-weight:700"></div><div class="fx gap8" style="justify-content:flex-end"><button type="button" data-hqs-close class="gcta2" style="width:auto;margin:0;color:var(--mut);border-color:var(--line)">Cancel</button><button type="button" data-hqs-confirm class="gcta" style="width:auto;min-width:210px;margin:0">Confirm Strategy \u2192<span class="shine"></span></button></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  function confirmStrategyOverlay(){
+    var S=TeamHQ._strategyDraft;if(!S)return;
+    var allSplit=(S.drivers||[]).length>0&&(S.drivers||[]).every(function(d){return !!d.strategy;});
+    if(!S.selected&&!allSplit){var m=document.getElementById('hqStrategyMsg');if(m)m.textContent='Choose a team strategy, Auto, or give both drivers individual plans.';return;}
+    var ds={},ers={},used={};(S.drivers||[]).forEach(function(d){if(d.strategy)ds[d.id]=d.strategy;ers[d.id]=d.ers||'balanced';used[d.id]=!!d.usedTyre;});
+    emit('confirmStrategyHQ',{teamStrategy:S.selected||(allSplit?'split':''),driverStrategies:ds,ers:ers,usedTyres:used});
+    var ov=document.getElementById('hqStrategyOverlay');if(ov)ov.remove();
+  }
+
+  // ---- live dashboard (replaces the static mock when TeamHQ.data.dash is supplied) ----`);
+      _hq = _hq.replace("document.addEventListener('click', function(e){", String.raw`document.addEventListener('click', function(e){
+    var hp=e.target.closest('[data-hqs-plan]');if(hp){TeamHQ._strategyDraft.selected=hp.getAttribute('data-hqs-plan');renderStrategyOverlay();return;}
+    var he=e.target.closest('[data-hqs-ers]');if(he){var ed=(TeamHQ._strategyDraft.drivers||[]).find(function(d){return String(d.id)===String(he.getAttribute('data-hqs-ers'));});if(ed){ed.ers=he.getAttribute('data-hqs-value');renderStrategyOverlay();}return;}
+    var hu=e.target.closest('[data-hqs-used]');if(hu){var ud=(TeamHQ._strategyDraft.drivers||[]).find(function(d){return String(d.id)===String(hu.getAttribute('data-hqs-used'));});if(ud){ud.usedTyre=!ud.usedTyre;renderStrategyOverlay();}return;}
+    if(e.target.closest('[data-hqs-close]')){var ho=document.getElementById('hqStrategyOverlay');if(ho)ho.remove();return;}
+    if(e.target.closest('[data-hqs-confirm]')){confirmStrategyOverlay();return;}`);
+      _hq = _hq.replace("      var a = act.getAttribute('data-act');", "      var a = act.getAttribute('data-act');\n      if(a==='openStrategy') return openStrategyOverlay();");
+      _hq = _hq.replace("document.addEventListener('input', function(e){", String.raw`document.addEventListener('change', function(e){
+    if(e.target&&e.target.hasAttribute('data-gridyear')){TeamHQ._gridYear=e.target.value;renderHistory();return;}
+    if(e.target&&e.target.hasAttribute('data-hqs-driver')){var d=(TeamHQ._strategyDraft.drivers||[]).find(function(x){return String(x.id)===String(e.target.getAttribute('data-hqs-driver'));});if(d)d.strategy=e.target.value;}
+  });
+  document.addEventListener('input', function(e){`);
+      // Refined strategy UX: a two-step Team HQ dialog replaces the dense all-at-once draft.
+      // It keeps the exact same strategy data and game actions, but uses the shell's typography,
+      // spacing, progressive disclosure and compact controls.
+      _hq = _hq.replace('  // ---- public API ----', function(){ return String.raw`
+  function openStrategyOverlayV3(){
+    var S=TeamHQ.data.dash&&TeamHQ.data.dash.nextRace&&TeamHQ.data.dash.nextRace.strategy;
+    if(!S||!S.available)return;
+    TeamHQ._strategyDraft=JSON.parse(JSON.stringify(S));
+    TeamHQ._strategyStep='plan';
+    renderStrategyOverlayV3();
+  }
+  function renderStrategyOverlayV3(){
+    var S=TeamHQ._strategyDraft;if(!S)return;
+    var old=document.getElementById('hqStrategyOverlay');if(old)old.remove();
+    var step=TeamHQ._strategyStep||'plan';
+    var deg=S.tireDeg>.75?'Very high':S.tireDeg>.55?'High':S.tireDeg>.35?'Medium':'Low';
+    var pass=S.overtakingDiff>.8?'Very hard':S.overtakingDiff>.6?'Difficult':S.overtakingDiff>.4?'Moderate':'Easy';
+    function radio(on){return '<span style="width:18px;height:18px;border:2px solid '+(on?'#e8112d':'#b7bdc9')+';border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none">'+(on?'<i style="width:8px;height:8px;border-radius:50%;background:#e8112d"></i>':'')+'</span>';}
+    function planRow(o){
+      var on=S.selected===o.id;
+      var tyres=(o.stints||[]).map(function(st){return '<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #e1e4e9;border-radius:7px;background:#fff;font-size:10px;font-weight:700"><i style="width:8px;height:8px;border-radius:50%;background:'+esc(st.color||'#777')+'"></i>'+esc(st.short)+' · '+esc(st.laps)+'L</span>';}).join('');
+      var windows=(o.pitWindows||[]).filter(function(_,i){return i%2===0;}).map(function(w,i){return 'L'+w+'–'+o.pitWindows[i*2+1];}).join(' & ');
+      return '<button type="button" data-hqs-plan="'+esc(o.id)+'" style="display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:11px;align-items:center;width:100%;text-align:left;padding:12px 13px;border:'+(on?'2px solid #e8112d':'1px solid #dfe3e9')+';border-radius:10px;background:'+(on?'#fff4f5':'#fff')+';color:#0f1218;cursor:pointer;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">'
+        +radio(on)+'<span style="min-width:0"><span style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><b style="font-size:13px">'+esc(o.label)+'</b>'+(o.recommended?'<span style="font-size:8px;font-weight:800;letter-spacing:.05em;padding:3px 6px;border-radius:12px;background:#dcfce7;color:#166534">RECOMMENDED</span>':'')+'</span><span style="display:block;margin-top:4px;font-size:11px;line-height:1.4;color:#5a606c">'+esc(o.desc||'')+'</span>'+(windows?'<span style="display:block;margin-top:4px;font-size:10px;font-weight:700;color:#8b4b00">Pit '+esc(windows)+'</span>':'')+'</span><span style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+tyres+'</span></button>';
+    }
+    var plans=(S.options||[]).map(planRow).join('');
+    var autoOn=S.selected==='auto';
+    var auto='<button type="button" data-hqs-plan="auto" style="display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:11px;align-items:center;width:100%;text-align:left;padding:12px 13px;border:'+(autoOn?'2px solid #e8112d':'1px solid #dfe3e9')+';border-radius:10px;background:'+(autoOn?'#fff4f5':'#f7f8fb')+';color:#0f1218;cursor:pointer;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">'+radio(autoOn)+'<span><b style="font-size:13px">Auto Strategy</b><span style="display:block;margin-top:4px;font-size:11px;line-height:1.4;color:#5a606c">Let the pit wall choose and react during the race.</span></span><span style="font-size:9px;font-weight:800;color:#b45309;white-space:nowrap">−1.5 PACE</span></button>';
+    var drivers=(S.drivers||[]).map(function(d){
+      var opts='<option value="">Follow team plan</option>'+(S.options||[]).map(function(o){return '<option value="'+esc(o.id)+'"'+(d.strategy===o.id?' selected':'')+'>'+esc(o.label)+'</option>';}).join('')+'<option value="auto"'+(d.strategy==='auto'?' selected':'')+'>Auto for this car</option>';
+      var ers=['conservative','balanced','aggressive'].map(function(v){var on=d.ers===v,l=v==='conservative'?'Conserve':v==='aggressive'?'Attack':'Balanced';return '<button type="button" data-hqs-ers="'+esc(d.id)+'" data-hqs-value="'+v+'" style="padding:8px 6px;border:'+(on?'1px solid #e8112d':'1px solid #dfe3e9')+';border-radius:7px;background:'+(on?'#fff0f2':'#fff')+';color:'+(on?'#c20f29':'#5a606c')+';font:800 10px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer;min-width:0">'+l+'</button>';}).join('');
+      var tyre=!S.qualifyingDone?'<button type="button" data-hqs-used="'+esc(d.id)+'" style="padding:7px 9px;border:1px solid '+(d.usedTyre?'#e8961a':'#dfe3e9')+';border-radius:7px;background:'+(d.usedTyre?'#fff7e8':'#fff')+';color:'+(d.usedTyre?'#8b4b00':'#5a606c')+';font:800 9px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer">'+(d.usedTyre?'USED QUALIFYING SET':'FRESH QUALIFYING SET')+'</button>':'';
+      return '<div class="hqs3-driver"><div class="hqs3-driver-head"><div><b style="font-size:14px">'+esc(d.name)+'</b><div style="font-size:10px;color:#8b91a0;margin-top:3px">'+(d.gridPos?'Starts P'+esc(d.gridPos)+' · ':'')+'ERS Management '+esc(d.ersMgmt)+'</div></div>'+tyre+'</div><div class="hqs3-driver-grid"><label style="font-size:9px;font-weight:800;letter-spacing:.07em;color:#8b91a0">TYRE PLAN<select data-hqs-driver="'+esc(d.id)+'" style="display:block;width:100%;margin-top:5px;padding:9px 10px;border:1px solid #dfe3e9;border-radius:7px;background:#f7f8fb;color:#0f1218;font:600 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif">'+opts+'</select></label><div><div style="font-size:9px;font-weight:800;letter-spacing:.07em;color:#8b91a0;margin-bottom:5px">ERS DEPLOYMENT</div><div class="hqs3-ers">'+ers+'</div></div></div></div>';
+    }).join('');
+    var planBody='<div style="font-size:12px;line-height:1.5;color:#5a606c;margin-bottom:11px">Choose the baseline for both cars. Driver overrides come next.</div><div style="display:flex;flex-direction:column;gap:8px">'+plans+auto+'</div>';
+    var driverBody='<div style="font-size:12px;line-height:1.5;color:#5a606c;margin-bottom:11px">Fine-tune each car, or leave it following the team plan.</div><div style="display:flex;flex-direction:column;gap:9px">'+drivers+'</div>';
+    var footer=step==='plan'?'<button type="button" data-hqs-close style="padding:10px 14px;border:1px solid #dfe3e9;border-radius:8px;background:#fff;color:#5a606c;font:700 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer">Cancel</button><button type="button" data-hqs-next style="padding:11px 18px;border:0;border-radius:8px;background:#e8112d;color:#fff;font:800 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;cursor:pointer">DRIVER SETUP →</button>':'<button type="button" data-hqs-back style="padding:10px 14px;border:1px solid #dfe3e9;border-radius:8px;background:#fff;color:#5a606c;font:700 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;cursor:pointer">← Team plan</button><button type="button" data-hqs-confirm style="padding:11px 18px;border:0;border-radius:8px;background:#e8112d;color:#fff;font:800 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;cursor:pointer">CONFIRM STRATEGY →</button>';
+    var ov=document.createElement('div');ov.id='hqStrategyOverlay';ov.className='hqs3';ov.style.cssText='position:fixed;inset:0;z-index:20000;background:rgba(10,12,18,.62);padding:22px 16px;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+    ov.innerHTML='<style>.hqs3-dialog{display:flex;flex-direction:column;width:min(780px,100%);max-height:92vh;background:#f3f4f7;border:1px solid rgba(15,18,24,.08);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.34);overflow:hidden;color:#0f1218;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}.hqs3-head{padding:17px 20px 15px;background:#fff;border-bottom:1px solid #dfe3e9;color:#0f1218}.hqs3-kicker{font:800 9px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.16em;color:#e8112d}.hqs3-title{margin-top:5px;font:800 22px/1.1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}.hqs3-close{border:1px solid #d7dbe2;background:#f5f6f8;color:#5a606c;border-radius:8px;width:34px;height:34px;font:500 17px system-ui;cursor:pointer}.hqs3-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.hqs3 .cpill{color:#5a606c!important;background:#f4f5f8!important;border-color:#dfe3e9!important}.hqs3-tabs{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-bottom:1px solid #dfe3e9}.hqs3-body{padding:16px 20px;overflow:auto;min-width:0}.hqs3-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 20px;background:#fff;border-top:1px solid #dfe3e9}.hqs3-driver{padding:13px;border:1px solid #dfe3e9;border-radius:10px;background:#fff;min-width:0}.hqs3-driver-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.hqs3-driver-grid{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:13px;margin-top:12px;min-width:0}.hqs3-ers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}@media(max-width:560px){#hqStrategyOverlay.hqs3{padding:8px;align-items:stretch}.hqs3-dialog{width:100%;max-height:calc(100dvh - 16px);border-radius:13px}.hqs3-head{padding:14px 14px 12px}.hqs3-title{font-size:19px}.hqs3-meta{gap:5px;margin-top:9px}.hqs3 .cpill{font-size:9px;padding:4px 7px}.hqs3-body{padding:13px 12px}.hqs3-foot{padding:11px 12px;position:sticky;bottom:0}.hqs3-driver{padding:12px}.hqs3-driver-head{align-items:flex-start;flex-wrap:wrap}.hqs3-driver-head>button{width:100%}.hqs3-driver-grid{grid-template-columns:minmax(0,1fr);gap:11px;margin-top:11px}.hqs3-ers{grid-template-columns:repeat(3,minmax(0,1fr))}.hqs3-foot>button{min-width:0;padding-left:12px!important;padding-right:12px!important}.hqs3 [data-hqs-plan]{grid-template-columns:20px minmax(0,1fr)!important}.hqs3 [data-hqs-plan]>span:last-child{grid-column:2;justify-content:flex-start!important}.hqs3-tabs button{font-size:9px!important;letter-spacing:.04em!important;padding:11px 5px!important}}@media(max-width:360px){.hqs3-ers{grid-template-columns:1fr}.hqs3-foot{flex-direction:column-reverse}.hqs3-foot>button{width:100%}}</style><div class="hqs3-dialog" role="dialog" aria-modal="true" aria-label="Race strategy"><div class="hqs3-head"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><div class="hqs3-kicker">RACE STRATEGY</div><div class="hqs3-title">'+esc(S.raceName||'Grand Prix')+'</div></div><button type="button" data-hqs-close aria-label="Close strategy" class="hqs3-close">✕</button></div><div class="hqs3-meta"><span class="cpill">Tyre wear '+deg+'</span><span class="cpill">Overtaking '+pass+'</span><span class="cpill">Rain '+esc(S.weatherRisk)+'%</span><span class="cpill">'+esc(S.laps)+' laps</span></div></div><div class="hqs3-tabs"><button data-hqs-step="plan" style="padding:12px;border:0;border-bottom:2px solid '+(step==='plan'?'#e8112d':'transparent')+';background:#fff;color:'+(step==='plan'?'#0f1218':'#8b91a0')+';font:800 10px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.08em;cursor:pointer">1 · TEAM PLAN</button><button data-hqs-step="drivers" style="padding:12px;border:0;border-bottom:2px solid '+(step==='drivers'?'#e8112d':'transparent')+';background:#fff;color:'+(step==='drivers'?'#0f1218':'#8b91a0')+';font:800 10px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.08em;cursor:pointer">2 · DRIVER SETUP</button></div><div class="hqs3-body">'+(step==='plan'?planBody:driverBody)+'<div id="hqStrategyMsg" style="min-height:18px;margin-top:9px;color:#c20f29;font-size:11px;font-weight:700"></div></div><div class="hqs3-foot">'+footer+'</div></div>';
+    document.body.appendChild(ov);
+  }
+  function confirmStrategyOverlayV3(){
+    var S=TeamHQ._strategyDraft;if(!S)return;
+    if(!S.selected){TeamHQ._strategyStep='plan';renderStrategyOverlayV3();var m=document.getElementById('hqStrategyMsg');if(m)m.textContent='Choose a team plan or Auto Strategy first.';return;}
+    var ds={},ers={},used={};(S.drivers||[]).forEach(function(d){if(d.strategy)ds[d.id]=d.strategy;ers[d.id]=d.ers||'balanced';used[d.id]=!!d.usedTyre;});
+    emit('confirmStrategyHQ',{teamStrategy:S.selected,driverStrategies:ds,ers:ers,usedTyres:used});
+    var ov=document.getElementById('hqStrategyOverlay');if(ov)ov.remove();
+  }
+  document.addEventListener('click',function(e){
+    var st=e.target.closest('[data-hqs-step]');if(st){var go=st.getAttribute('data-hqs-step');if(go==='drivers'&&!TeamHQ._strategyDraft.selected){var m=document.getElementById('hqStrategyMsg');if(m)m.textContent='Choose a team plan or Auto Strategy first.';return;}TeamHQ._strategyStep=go;renderStrategyOverlayV3();return;}
+    if(e.target.closest('[data-hqs-next]')){if(!TeamHQ._strategyDraft.selected){var n=document.getElementById('hqStrategyMsg');if(n)n.textContent='Choose a team plan or Auto Strategy first.';return;}TeamHQ._strategyStep='drivers';renderStrategyOverlayV3();return;}
+    if(e.target.closest('[data-hqs-back]')){TeamHQ._strategyStep='plan';renderStrategyOverlayV3();return;}
+  });
+  openStrategyOverlay=openStrategyOverlayV3;
+  renderStrategyOverlay=renderStrategyOverlayV3;
+  confirmStrategyOverlay=confirmStrategyOverlayV3;
+
+  // ---- public API ----`; });
+      _hq = _hq.replace('    toast: toast\n', '    toast: toast,\n    openStrategy: openStrategyOverlay\n');
       return _hq;
     } catch(e){ return null; }
   };
@@ -32295,13 +32507,50 @@ window._pwHandleOrder = function(code, val){
                       carScore:(_score!=null?Number(_score).toFixed(1):null), carRank:(_rankT||null), setup:_setup, weather:_wx, predMin:_pmin, predMax:_pmax };
           }
         } catch(e){}
+        var strategy=null;
+        try {
+          if(nextR && !seasonDone && !nextR.raceDone){
+            if(nextR._weatherRisk===undefined) nextR._weatherRisk=Math.random()<0.3?randFloat(0.1,0.55):0;
+            var _ss=(typeof GameActions!=='undefined'&&GameActions._getRaceStrategyState)?GameActions._getRaceStrategyState(nextR):{mode:(nextR._chosenStrategy||null)};
+            var _sm=_ss&&_ss.mode, _sl='No strategy set', _sd='Choose tyre stints, pit windows and ERS deployment before the Grand Prix.';
+            var _stratData=(typeof DATA!=='undefined'&&DATA.getStrategyOptions)?DATA.getStrategyOptions(nextR,nextR._weatherRisk||0):null;
+            if(_sm==='auto') { _sl='Auto Strategy'; _sd='Engineers will manage tyre and pit calls (\u22121.5 pace).'; }
+            else if(_sm==='split') {
+              _sl='Split Strategy';
+              var _ids=State.getPlayerRacingDriverIds?State.getPlayerRacingDriverIds():[];
+              _sd=_ids.map(function(id){ var d=State.getDriver(id), sid=nextR._driverStrategies&&nextR._driverStrategies[id], op=_stratData&&_stratData.options&&_stratData.options.find(function(o){return o.id===sid;}); return d?(lastNameOf(d.name)+': '+(op&&op.label||sid||'Same as team')):null; }).filter(Boolean).join(' / ')||'Different plans are set for each car.';
+            } else if(_sm) {
+              var _op=_stratData&&_stratData.options&&_stratData.options.find(function(o){return o.id===_sm;});
+              _sl=_op&&_op.label||String(_sm);
+              if(_op){
+                var _short={soft:'S',medium:'M',hard:'H',intermediate:'I',wet:'W'};
+                _sd=(_op.stints||[]).map(function(s){return (_short[s.compound]||String(s.compound||'').charAt(0).toUpperCase())+' '+s.laps+'L';}).join(' \u2192 ');
+                if(_op.pitWindows&&_op.pitWindows.length) _sd+=' \u00b7 pit windows '+_op.pitWindows.filter(function(_,i){return i%2===0;}).map(function(w,i){return 'L'+w+'\u2013'+_op.pitWindows[i*2+1];}).join(' & ');
+              }
+            }
+            var _tyres=(typeof DATA!=='undefined'&&DATA.tires)||{};
+            var _opts=((_stratData&&_stratData.options)||[]).map(function(o){
+              return { id:o.id, label:o.label||o.id, desc:o.desc||'', recommended:!!o.recommended,
+                stints:(o.stints||[]).map(function(s){ var tt=_tyres[s.compound]||{}; return {compound:s.compound,laps:s.laps||0,short:tt.short||String(s.compound||'').charAt(0).toUpperCase(),name:tt.name||s.compound,color:tt.color||'#777'}; }),
+                pitWindows:(o.pitWindows||[]).slice() };
+            });
+            var _racing=(State.getPlayerRacingDrivers?State.getPlayerRacingDrivers():State.getPlayerDrivers()).map(function(d){
+              var qr=(nextR.qualiResult||[]).find(function(x){return String(x.driverId)===String(d.id);});
+              return { id:d.id,name:d.name||'',last:lastNameOf(d.name||''),gridPos:qr&&qr.position||null,ersMgmt:Math.round(d.energyMgmt||70),
+                strategy:(nextR._driverStrategies&&nextR._driverStrategies[d.id])||'',ers:(nextR._ersDeployment&&nextR._ersDeployment[d.id])||'balanced',usedTyre:!!(nextR._usedTyreQuali&&nextR._usedTyreQuali[d.id]) };
+            });
+            strategy={ available:true, ready:!!_sm, mode:_sm||'', selected:(_sm&&_sm!=='split'?_sm:''), label:_sl, detail:_sd,
+              qualifyingDone:!!nextR.qualiDone, raceName:nextR.name||'Grand Prix',laps:nextR.laps||0,weatherRisk:Math.round((nextR._weatherRisk||0)*100),
+              tireDeg:(_stratData&&_stratData.tireDeg)||0,overtakingDiff:(_stratData&&_stratData.overtakingDiff)||0,options:_opts,drivers:_racing };
+          }
+        } catch(e){}
         var nextRace = { name: seasonDone?'Season Complete':(nextR.name||'\u2014'), flag: seasonDone?'':(window._countryFlag?window._countryFlag(nextR.country):''),
                          tag: seasonDone?('P'+(myIdx>=0?myIdx+1:'-')+' FINAL'):('ROUND '+pad2(roundNow)+' / '+pad2(total)),
                          pills: pills, upNext: nextR.sprint?'Sprint points on Saturday':'', canRace: !seasonDone && !g.offseasonPending,
                          offseason: !!g.offseasonPending,
                          isSprintWeekend:!!nextR.sprint, sprintQualiDone:!!nextR.sprintQualiDone,
                          sprintDone:!!nextR.sprintDone, qualiDone:!!nextR.qualiDone, raceDone:!!nextR.raceDone,
-                         circuit: circuit };
+                         circuit: circuit, strategy:strategy };
 
         // -- timing tower: last completed race, else championship order --
         var tower=null;
@@ -32512,10 +32761,18 @@ window._pwHandleOrder = function(code, val){
   window._buildHQObjectives = function(){
     try {
       var g=State.game; if(!g) return null;
-      if((!g.boardObjectives || !g.boardObjectives.length) && g.raceIndex===0 && State.generateBoardObjectives){
-        try { State.generateBoardObjectives(); } catch(e){}
+      // Rendering Team HQ must be read-only. Objectives are generated only by new-game and
+      // season-start logic; the UI never rolls a replacement set merely because a save is
+      // missing/temporarily migrating the field.
+      var objectives=g.boardObjectives||[];
+      if(!objectives.length && g._boardObjectivesSnapshot && g._boardObjectivesSnapshot.season===g.season){
+        objectives=JSON.parse(JSON.stringify(g._boardObjectivesSnapshot.items||[]));
+        g.boardObjectives=objectives;
       }
-      var objectives=g.boardObjectives||[]; if(!objectives.length) return null;
+      if(!objectives.length) return null;
+      if(!g._boardObjectivesSnapshot || g._boardObjectivesSnapshot.season!==g.season){
+        g._boardObjectivesSnapshot={season:g.season,items:JSON.parse(JSON.stringify(objectives))};
+      }
       var team=State.getPlayerTeam(); if(!team) return null;
       var playerDs=State.getPlayerDrivers();
       var seasonW=playerDs.reduce(function(s,d){return s+(d.wins||0);},0);
@@ -32642,7 +32899,11 @@ window._pwHandleOrder = function(code, val){
     var _racesDone=(State.game.calendar||[]).filter(function(r){return r.raceDone;}).length, _qThresholds=[];
     try { _qThresholds=getUpgradeWindowThresholds(State.game); } catch(e) { _qThresholds=[7,14]; }
     var _qBudget=Math.round((t.revenue||0)*0.15), _qArr=State.game.quarterDev||[];
-    var _windows=[0,1].map(function(qi){ var qd=_qArr[qi]||{aero:0,reliability:0,engine:0,applied:false}; var threshold=_qThresholds[qi]; return {qi:qi,label:qi===0?'Mid-Season Upgrade Window':'Summer Upgrade Window',threshold:threshold,until:threshold==null?null:Math.max(0,threshold-_racesDone),status:qd.applied?'complete':(threshold!=null&&_racesDone>=threshold?'available':'upcoming'),aero:qd.aero||0,reliability:qd.reliability||0,engine:qd.engine||0,applied:!!qd.applied,focus:qd.componentFocus||{}}; });
+    var _windows=[0,1].map(function(qi){
+      var qd=_qArr[qi]||{aero:0,reliability:0,engine:0,applied:false}, threshold=_qThresholds[qi], focus=qd.componentFocus||{};
+      var focusOptions={}; try { ['aero','mechanical'].forEach(function(group){ focusOptions[group]=[{id:'balanced',label:'Balanced',rating:null}].concat((COMP_GROUPS[group]||[]).map(function(k){var cm=CAR_COMPONENTS[k]||{};return {id:k,label:(cm.icon?cm.icon+' ':'')+(cm.label||k),rating:R(t.components&&t.components[k])};})); }); } catch(e){}
+      return {qi:qi,label:qi===0?'Mid-Season Upgrade Window':'Summer Upgrade Window',threshold:threshold,until:threshold==null?null:Math.max(0,threshold-_racesDone),status:qd.applied?'complete':(threshold!=null&&_racesDone>=threshold?'available':'upcoming'),aero:qd.aero||0,reliability:qd.reliability||0,engine:qd.engine||0,applied:!!qd.applied,focus:focus,focusOptions:focusOptions,canDivert:State.game.nextRegsYear===State.game.season+1&&_racesDone>=10,diversion:Math.round(((State.game.quarterDevDiversion&&State.game.quarterDevDiversion[qi])||0)*100),nextRegsYear:State.game.nextRegsYear||State.game.season+1};
+    });
     var detail={summary:[{label:'Car Performance',value:R(t.carPerformance),display:Number(t.carPerformance||0).toFixed(1),color:'var(--red)'},{label:'Reliability',value:R(t.reliability),display:Number(t.reliability||0).toFixed(1),color:'var(--grn)'},{label:'Development Rate',value:R(t.developmentRate),display:Number(t.developmentRate||0).toFixed(1),color:'var(--blu)'},{label:'Facilities',value:R(t.facilities),display:Number(t.facilities||0).toFixed(1),color:'var(--amb)'}],facilities:_facUnits,components:_components,trackName:_race&&_race.name?String(_race.name).replace(' Grand Prix',''):'',subStats:stats.map(function(s,i){return {label:s.label,value:s.value,display:s.value+' · '+(['P1','P1','P1','P1','P1'][i]||''),color:['var(--amb)','var(--vio)','var(--blu)','var(--grn)','var(--red)'][i]};}),power:_power,finance:_finance,windows:_windows,windowBudget:_qBudget,racesDone:_racesDone};
     return { ovr:R(t.carPerformance), stats:stats, upgrades:ups, setup:setup, detail:detail, development:{ budget:'$'+R(t.revenue)+'M', allocations:alloc } };
   };
@@ -32716,7 +32977,12 @@ window._pwHandleOrder = function(code, val){
     var note = !hasScout ? 'No scout hired \u2014 potential values are hidden. Choose a scout tier below to start receiving reports.' : (tier.name+' active \u00B7 '+tier.accuracy+'% report accuracy');
     var unscoutedN=0; try { var qm={}; queue.forEach(function(q){ qm[String(q.driverId)]=1; }); unscoutedN=(State.getProspects?State.getProspects():[]).filter(function(d){ return d.scoutedPotential==null && !qm[String(d.id)]; }).length; } catch(e){}
     var tiersArr=[]; try { tiersArr=((typeof DATA!=='undefined'&&DATA.scoutingTiers)||[]).map(function(tr){ return { id:tr.id, name:tr.name, desc:tr.description||'', accuracy:tr.accuracy||0, salary:tr.salary||0, current:tr.id===(g.scoutingTier||'none') }; }); } catch(e){}
-    return { scouts:scouts, prospects:prospects.slice(0,12), regions:[], note:note, chosen:!!g.scoutingChosen, tiers:tiersArr, unscouted:(hasScout?unscoutedN:0), queued:queue.length };
+    var gridReports=[], pendingGrid=[]; try {
+      gridReports=(g.scoutedGridDrivers||[]).map(function(r){var d=State.getDriver(r.driverId),tm=d&&State.getTeam(d.teamId);return d&&!d.retired?{id:d.id,name:d.name||'',nat:nat2(d),team:(tm&&tm.name)||'Free Agent',age:d.age||0,result:Math.round(r.result||d.rating||0)}:null;}).filter(Boolean);
+      var done=(g.calendar||[]).filter(function(r){return r.raceDone;}).length;
+      pendingGrid=(g.gridScoutQueue||[]).map(function(r){var d=State.getDriver(r.driverId);return d?{id:d.id,name:d.name||'',remaining:Math.max(1,(r.completesAfterRace||done+1)-done)}:null;}).filter(Boolean);
+    } catch(e){}
+    return { scouts:scouts, prospects:prospects, regions:[], note:note, chosen:!!g.scoutingChosen, tiers:tiersArr, unscouted:(hasScout?unscoutedN:0), queued:queue.length, gridReports:gridReports, pendingGrid:pendingGrid };
   };
   window._buildHQAcademy = function(){
     var g=State.game, juniors=[], a=g.academy||{};
@@ -32730,13 +32996,14 @@ window._pwHandleOrder = function(code, val){
         var est=((Math.max(0,pot-ovr))*0.18*facMult).toFixed(1);
         var yrsLeft=Math.max(0,2-(j.yearsInAcademy||0));
         var note='Est. +'+est+' OVR/season at current facilities'+(j.promotionEligible?'':(yrsLeft>0?' · '+yrsLeft+' season'+(yrsLeft>1?'s':'')+' until promotion eligible':''));
-        juniors.push({ id:j.id, name:j.name||'', nat:nat2(j), age:j.age||0, ovr:ovr, potential:pot, progress:prog, series:j.series||j.prospectSeries||'F3', morale:Math.round(j.morale||0), contract:j.contract||j.years||0, years:(j.yearsInAcademy||0)+1, pace:Math.round(j.racePace||0), quali:Math.round(j.qualifying||0), consistency:Math.round(j.consistency||0), promotionEligible:!!j.promotionEligible&&!onLoan, note:note, status:onLoan?'On loan':'Academy' });
+        juniors.push({ id:j.id, name:j.name||'', nat:nat2(j), age:j.age||0, ovr:ovr, potential:pot, progress:prog, series:j.series||j.prospectSeries||'F3', morale:Math.round(j.morale||0), contract:j.contract||j.years||0, years:(j.yearsInAcademy||0)+1, pace:Math.round(j.racePace||0), quali:Math.round(j.qualifying||0), consistency:Math.round(j.consistency||0), promotionEligible:!!j.promotionEligible&&!onLoan, loanEligible:!onLoan&&(j.age||0)>=18&&ovr>=68&&j._loanCycleSeason!==g.season, note:note, status:onLoan?'On loan':'Academy' });
       });
     } catch(e){}
     var used = juniors.length; try { used += (a.loans||[]).length; } catch(e){}
     var founded=!!g.academy, foundTiers=[];
     if(!founded){ foundTiers=[{index:0,label:'Starter Programme',cost:8,slots:2},{index:1,label:'Development Academy',cost:15,slots:4},{index:2,label:'Elite Academy',cost:28,slots:6}]; }
-    return { founded:founded, foundTiers:foundTiers, suggestedName:(function(){ try { return State.getPlayerTeam().name+' Driver Academy'; } catch(e){ return 'Driver Academy'; } })(), juniors:juniors, loans:(a.loans||[]).map(function(l){return {team:l.teamName||l.team||'Loan team',driver:l.driverName||'',years:l.years||l.seasonsLeft||0};}), slots:{ used:used, total:(a.maxSlots||4) } };
+    var academyTiers=[{label:'Starter Programme',cost:8,slots:2},{label:'Development Academy',cost:15,slots:4},{label:'Elite Academy',cost:28,slots:6}], tierIndex=academyTiers.findIndex(function(x){return x.label===a.tier;}), nextTier=(tierIndex>=0&&tierIndex<academyTiers.length-1)?academyTiers[tierIndex+1]:null;
+    return { founded:founded, foundTiers:foundTiers, suggestedName:(function(){ try { return State.getPlayerTeam().name+' Driver Academy'; } catch(e){ return 'Driver Academy'; } })(), name:a.name||'', tier:a.tier||'', annualBudget:a.annualBudget||0, nextTier:nextTier, graduates:(a.graduates||[]).length, juniors:juniors, loans:(a.loans||[]).map(function(l){return {id:l.driverId,team:l.teamName||l.team||'Loan team',driver:l.driverName||'',years:l.years||l.seasonsLeft||Math.max(0,(l.returnSeason||g.season)-g.season)};}), slots:{ used:used, total:(a.maxSlots||4) } };
   };
   // Ask the browser to protect our localStorage from eviction (silent, best-effort).
   try { if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
@@ -33008,7 +33275,21 @@ window._pwHandleOrder = function(code, val){
       }
     } catch(e){}
     var raceGrid=[]; try { raceGrid=(g.calendar||[]).filter(function(r){return r.raceDone;}).slice(-12).reverse().map(function(r){ var win=(r.raceResult||[]).filter(function(x){return !x.dnf&&x.position===1;})[0]||{}; return {race:r.name||'',winner:win.driverName||'',team:win.teamName||''}; }); } catch(e){}
-    return { seasons:seasons, goat:goat, records:records, hof:hof, ladder:ladder, raceGrid:raceGrid, honours:{
+    var dynasty=null; try {
+      if(cs.length&&typeof computeDynastyRating==='function'){
+        var dr=computeDynastyRating(g.careerStats), managed={}; ((g.careerStats&&g.careerStats.teamsManaged)||[]).forEach(function(x){if(x&&x.teamId!=null)managed[String(x.teamId)]=1;});
+        var teamRanks=(g.teams||[]).map(function(x){return {name:x.name||'',color:x.color||'#888',score:computeTeamDynastyScore(x,g),titles:x.championships||0,wins:(x.totalWins||0)+(x.wins||0),mine:String(x.id)===String(g.playerTeamId),managed:!!managed[String(x.id)]};}).sort(function(a,b){return b.score-a.score;}).map(function(x,i){x.rank=i+1;return x;});
+        var poss=cs.map(function(x){return x.position||99;}), avg=poss.reduce(function(s,x){return s+x;},0)/Math.max(1,poss.length);
+        dynasty={score:dr.score||0,tier:dr.tier||{},nextTier:dr.nextTier||null,progress:dr.tierProgress||0,pointsToNext:dr.pointsToNext||0,breakdown:(dr.breakdown||[]).map(function(x){return {icon:x.icon||'',label:x.label||'',points:x.pts||0};}),constructors:teamRanks,seasons:cs.slice().reverse().map(function(x){return {season:x.season,position:x.position||0,points:Math.round(x.points||0),wins:x.wins||0,podiums:x.podiums||0,poles:x.poles||0,driverChamp:!!x.driverChamp,constructorChamp:!!x.constructorChamp};}),stats:{seasons:cs.length,driverTitles:g.careerStats.championships||0,constructorTitles:g.careerStats.constructorChampionships||0,wins:g.careerStats.totalWins||0,podiums:g.careerStats.totalPodiums||0,poles:g.careerStats.totalPoles||0,best:Math.min.apply(Math,poss),average:Math.round(avg*10)/10},regulations:(g.regsHistory||[]).slice().reverse()};
+      }
+    } catch(e){}
+    var achievements=null; try { var defs=UI._getAchievementDefs(), unlocked=UI._getUnlockedAchievements(), um={}; unlocked.forEach(function(id){um[String(id)]=1;}); achievements={done:unlocked.length,total:defs.length,items:defs.map(function(x){return {id:x.id,category:x.cat||'Career',icon:x.icon||'🏆',name:x.name||'',desc:x.desc||'',unlocked:!!um[String(x.id)]};})}; } catch(e){}
+    var raceGridSeasons=[]; try {
+      raceGridSeasons=((g.history&&g.history.seasonStandings)||[]).filter(function(s){return s.raceGrid&&s.raceGrid.length;}).slice(-12).reverse().map(function(s){
+        return {season:s.season,drivers:(s.drivers||[]).slice().sort(function(a,b){return a.position-b.position;}).map(function(d){return {id:d.driverId,name:d.driverName||'',teamId:d.teamId,team:d.teamName||'',points:d.points||0,position:d.position||0,mine:String(d.teamId)===String(g.playerTeamId)};}),races:(s.raceGrid||[]).map(function(r){return {name:r.location||String(r.name||'').replace(' Grand Prix',''),sprint:!!r.sprint,race:(r.raceResult||[]).map(function(x){return {id:x.driverId,pos:x.position||0,dnf:!!x.dnf};}),sprintResult:(r.sprintResult||[]).map(function(x){return {id:x.driverId,pos:x.position||0,dnf:!!x.dnf};})};})};
+      });
+    } catch(e){}
+    return { seasons:seasons, goat:goat, records:records, hof:hof, ladder:ladder, raceGrid:raceGrid, raceGridSeasons:raceGridSeasons, dynasty:dynasty, achievements:achievements, honours:{
       titles:(st.constructorChampionships!=null?st.constructorChampionships:(t.championships||0)),
       wins:(st.totalWins!=null?st.totalWins:(t.wins||0)),
       podiums:(st.totalPodiums!=null?st.totalPodiums:(t.podiums||0)),
@@ -33477,6 +33758,12 @@ window._pwHandleOrder = function(code, val){
       var rvPod = last&&last.podiums!=null ? last.podiums : (snap.podiums!=null?snap.podiums:(t.podiums||0));
       var noPrior = !last && rvPos==null && rvPts==null;
       var toSeasonV = (g.season||finishedSeason+1);
+      // Career decisions that existed on the classic offseason page must remain actionable.
+      var teamOffers=(g.teamOffers||[]).map(function(o){ var ot=T_(o.teamId)||{}; return {teamId:o.teamId,name:o.teamName||ot.name||'Team',color:o.color||ot.color||'#888',position:o.position||0,car:Math.round(o.carPerf||getTeamOverallCar(ot)||0),reliability:Math.round(o.reliability||ot.reliability||0),budget:Math.round(o.revenue||ot.revenue||0),drivers:(S.getTeamDrivers?S.getTeamDrivers(o.teamId):[]).map(function(d){return d.name;}).slice(0,2)}; });
+      var poachAttempts=(g.poachAttempts||[]).map(function(pa,index){ return {index:index,driverId:pa.driverId,driverName:pa.driverName||((S.getDriver(pa.driverId)||{}).name)||'Driver',teamName:pa.teamName||'',salary:pa.offerSalary||0,years:pa.offerYears||0}; });
+      var preContracts=(g.preSeasonMoves||[]).filter(function(m){return m.playerInitiated;}).map(function(m){return {driver:m.driverName||'',from:m.fromTeamName||'',to:m.toTeamName||'',salary:m.salary||0,years:m.years||0};});
+      var moveOptions=[]; try { moveOptions=(g.teams||[]).filter(function(x){return String(x.id)!==String(pid);}).map(function(x){var ev=GameActions.evaluateTeamInterest(x.id);return ev?{teamId:x.id,name:x.name||'',color:x.color||'#888',position:ev.tPos,interest:ev.interest,tier:ev.tier,trajectory:ev.traj,car:Math.round(getTeamOverallCar(x)||0)}:null;}).filter(Boolean).sort(function(a,b){return b.interest-a.interest;}); } catch(e){}
+      var mood=g.ownerMood||{performance:0,finances:0}, moodTotal=(mood.performance||0)+(mood.finances||0), goal=g.ownerGoal||S.getOwnerGoal(pid), goalLabel=goal===1?'Win the Championship':goal<=3?'Top '+goal+' in Constructors':goal<=6?'Top '+goal+' Finish':'Finish P'+goal+' or Better';
       return {
         fromSeason:(noPrior?null:finishedSeason), toSeason:toSeasonV,
         steps:steps,
@@ -33488,7 +33775,9 @@ window._pwHandleOrder = function(code, val){
         scouting:scouting,
         engine:engine,
         development:{ budget:budget, remaining:Math.max(0,budget-spentTot), areas:areas },
-        regs:{ active:true, note:'Invest early development into the '+((g.nextRegsYear)||((g.season||0)+1))+' regulation reset.', investedPct:Math.round((g.regsInvestment||0)*100) }
+        regs:{ active:true, note:'Invest early development into the '+((g.nextRegsYear)||((g.season||0)+1))+' regulation reset.', investedPct:Math.round((g.regsInvestment||0)*100) },
+        teamOffers:teamOffers, poachAttempts:poachAttempts, preContracts:preContracts, moveOptions:moveOptions,
+        owner:{goal:goalLabel,performance:mood.performance||0,finances:mood.finances||0,total:moodTotal,status:moodTotal>0.8?'Delighted':moodTotal>0.2?'Satisfied':moodTotal>-0.5?'Concerned':moodTotal>-1?'Worried':'On the Brink'}
       };
     } catch(e){ return {}; }
   };
@@ -33615,7 +33904,7 @@ window._pwHandleOrder = function(code, val){
         var mood=s.lastSeasonMood||'neutral', moodLabel=mood.replace(/_/g,' '), moodColor=mood==='happy'?'var(--grn)':(mood==='unhappy'||mood==='very_unhappy'?'var(--amb)':'var(--mut)');
         moodLabel=moodLabel.charAt(0).toUpperCase()+moodLabel.slice(1);
         var value=0; try { value=Math.round(getSponsorEffectiveValue(s)); } catch(e){ value=Math.round(s.value||0); }
-        return '<div class="hq-profile hq-sponsor" id="hq-sponsor-'+index+'" data-sponsor-name="'+esc(s.name)+'"><div class="hq-profile-body"><div class="fx ac jb gap8 wrap"><div><b>'+esc(s.name)+'</b><div class="fs11 mut mt4">'+esc(s.type||'Partner')+' · '+esc((meta.seasonsLeft!=null?meta.seasonsLeft:(s.seasonsLeft||0))+'yr left')+'</div></div><b class="mono" style="color:var(--grn)">+$'+value+'M/yr</b></div><div class="hq-metric-grid" style="margin-top:12px"><div class="hq-metric"><b style="font-family:inherit;color:'+moodColor+'">'+esc(moodLabel)+'</b><span>Relationship</span></div><div class="hq-metric"><b style="font-family:inherit">'+esc(meta.goalLabel||'No stated target')+'</b><span>Season target</span></div><div class="hq-metric"><b style="font-family:inherit">'+esc(s.linkedDriverName||'Team deal')+'</b><span>Association</span></div></div></div></div>';
+        return '<div class="hq-profile hq-sponsor" id="hq-sponsor-'+index+'" data-sponsor-name="'+esc(s.name)+'"><div class="hq-profile-body"><div class="fx ac jb gap8 wrap"><div><b>'+esc(s.name)+'</b><div class="fs11 mut mt4">'+esc(s.type||'Partner')+' · '+esc((meta.seasonsLeft!=null?meta.seasonsLeft:(s.seasonsLeft||0))+'yr left')+'</div></div><b class="mono" style="color:var(--grn)">+$'+value+'M/yr</b></div><div class="hq-metric-grid" style="margin-top:12px"><div class="hq-metric"><b style="font-family:inherit;color:'+moodColor+'">'+esc(moodLabel)+'</b><span>Relationship</span></div><div class="hq-metric"><b style="font-family:inherit">'+esc(meta.goalLabel||'No stated target')+'</b><span>Season target</span></div><div class="hq-metric"><b style="font-family:inherit">'+esc(s.linkedDriverName||'Team deal')+'</b><span>Association</span></div></div><div class="fx" style="justify-content:flex-end;margin-top:11px"><button class="renew ghost" data-act="terminateSponsor" data-arg=\''+esc(JSON.stringify({index:index}))+'\' style="color:var(--red);border-color:rgba(232,17,45,.28)">TERMINATE CONTRACT</button></div></div></div>';
       }).join('')||'<div class="tele mut">No sponsor contracts are active.</div>';
       window._hqAddPanel('finance','hq-sponsor-details','Sponsor Contract Details','<div class="hq-insight"><div class="fs12 mut" style="margin-bottom:12px">Each deal now shows its value, term, target and relationship status here — without leaving Team HQ.</div>'+cards+'</div>');
       var targetName=window._hqSponsorDetailName; if(targetName){ window._hqSponsorDetailName=null; setTimeout(function(){ try { var node=docQuery('[data-sponsor-name="'+String(targetName).replace(/"/g,'&quot;')+'"]'); if(node){node.classList.add('focus');node.scrollIntoView({behavior:'smooth',block:'center'});} }catch(e){} },0); }
@@ -33823,6 +34112,28 @@ window._pwHandleOrder = function(code, val){
       var moraleCol=(d.morale||0)>70?'var(--grn)':(d.morale||0)>50?'var(--amb)':'var(--red)';
       var contractLine='<div class="fs12" style="margin-top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="color:var(--mut)">'+(d.teamId?'Contract:':'Availability:')+'</span><b class="mono" style="color:var(--amb)">$'+R(d.salary)+'M/yr</b><span style="color:var(--mut)">·</span><b>'+(d.teamId?((d.contract||0)>0?(d.contract+'yr'):'Expired'):(feederLocked?(feederSeries+' · locked until '+feederAvailableYear):(d.isProspect?'Free to sign':(d.retired?'Retired':'Free Agent'))))+'</b>'+(d.morale!=null?'<span style="color:var(--mut)">·</span><b style="color:'+moraleCol+'">Morale '+R(d.morale)+'</b>':'')+'</div>';
       var seasonLine='<div class="fs11" style="margin-top:6px;color:var(--mut)">This season: <b class="mono" style="color:var(--ink)">'+(d.seasonPoints||0)+' pts · '+(d.wins||0)+' W · '+(d.podiums||0)+' POD · '+(d.poles||0)+' PP</b></div>';
+      // Management actions were easy to miss when the profile was rebuilt. Keep every classic
+      // roster path here: renew/release, race-reserve moves, loans, prospect commitments and
+      // approaches to rival drivers.
+      var inAcademy=false; try { inAcademy=!!(g.academy&&(g.academy.juniors||[]).some(function(j){return String(j.id)===String(d.id);})); } catch(e){}
+      var actBtn=function(act,label,primary,disabled){ return '<button type="button" data-hqp-action="'+act+'"'+(disabled?' disabled':'')+' style="padding:10px 12px;border-radius:8px;border:1px solid '+(primary?'var(--red)':'var(--line)')+';background:'+(primary?'var(--red)':'#fff')+';color:'+(primary?'#fff':'var(--ink)')+';font:800 10px system-ui;letter-spacing:.04em;cursor:'+(disabled?'not-allowed':'pointer')+';opacity:'+(disabled?'.5':'1')+'">'+label+'</button>'; };
+      var acts=[];
+      if(isMine && d.isReserve){ acts.push(actBtn('promoteReserve','PROMOTE TO RACE SEAT',true),actBtn('renew','RENEW CONTRACT'),actBtn('reserveLoan','SEND ON LOAN',false,(d.age||0)<18),actBtn('release','RELEASE')); }
+      else if(isMine){ acts.push(actBtn('renew','RENEW CONTRACT',true),actBtn('demote','MOVE TO RESERVE'),actBtn('release','RELEASE')); }
+      else if(inAcademy){ if(d.promotionEligible){acts.push(actBtn('juniorReserve','PROMOTE TO RESERVE',true),actBtn('juniorRace','PROMOTE TO RACE SEAT'));} if((d.age||0)>=18&&(d.rating||0)>=68)acts.push(actBtn('juniorLoan','ARRANGE LOAN')); acts.push(actBtn('juniorRelease','RELEASE FROM ACADEMY')); }
+      else if(d.isProspect&&!d.retired){
+        if(!feederLocked&&(d.age||0)>=18) acts.push(actBtn('signRace','SIGN TO RACE SEAT',true));
+        acts.push(actBtn('signReserve','SIGN AS RESERVE',!feederLocked));
+        if(feederYears===1) acts.push(actBtn('preSign','PRE-SIGN FOR '+feederAvailableYear,true));
+        var openAcademy=false; try { openAcademy=!!(g.academy&&d.age<=22&&((g.academy.juniors||[]).length+(g.academy.loans||[]).length)<(g.academy.maxSlots||4)&&!feederLocked); } catch(e){}
+        if(openAcademy) acts.push(actBtn('signJunior','SIGN TO ACADEMY'));
+      } else if(isFA){ acts.push(actBtn('signRace','OFFER RACE CONTRACT',true),actBtn('signReserve','OFFER RESERVE CONTRACT')); }
+      else if(team&&!d.retired){
+        var alreadyTalks=(g.pendingNegotiations||[]).some(function(n){return String(n.driverId)===String(d.id);});
+        var canApproach=(d.contract||0)<=1&&(g.raceIndex||0)>=6&&!alreadyTalks;
+        acts.push(actBtn('approach',canApproach?'APPROACH FOR NEXT SEASON':((g.raceIndex||0)<6?'APPROACH OPENS AT RACE 6':alreadyTalks?'NEGOTIATION IN PROGRESS':'UNDER LONG-TERM CONTRACT'),true,!canApproach),actBtn('scout','SCOUT DRIVER'));
+      }
+      var actionHtml=acts.length?'<div class="hqp-sec">Management</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+acts.join('')+'</div>':'';
       var old=doc.getElementById('hq-driver-profile-overlay'); if(old) old.remove();
       var el=doc.createElement('div'); el.id='hq-driver-profile-overlay';
       el.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,12,18,.62);display:flex;align-items:flex-start;justify-content:center;padding:26px 18px;overflow:auto';
@@ -33837,12 +34148,31 @@ window._pwHandleOrder = function(code, val){
         + '<div class="hqp-sec">Career Stats</div>'+careerStrip
         + histHtml
         + traitHtml
-        + contractLine + seasonLine
-        + (isFA?'<button type="button" data-hq-profile-sign style="margin-top:18px;width:100%;padding:13px;border:0;border-radius:9px;background:var(--red);color:#fff;font:800 13px system-ui;letter-spacing:.06em;cursor:pointer">OPEN SIGN TALKS · ASKING $'+R(d.salary)+'M/YR</button>':'')
+        + contractLine + seasonLine + actionHtml
         + '</div>';
       el.addEventListener('click',function(ev){ if(ev.target===el||ev.target.closest('[data-hq-profile-close]')) el.remove(); });
-      var signBtn=el.querySelector('[data-hq-profile-sign]');
-      if(signBtn) signBtn.addEventListener('click',function(){ el.remove(); try { window._hqSignFlow(d.id); } catch(e){} });
+      el.addEventListener('click',function(ev){
+        var b=ev.target.closest('[data-hqp-action]'); if(!b||b.disabled)return; var a=b.getAttribute('data-hqp-action'), modal=false, refresh=true;
+        try {
+          if(a==='renew'){ el.remove(); GameActions.renewDriver(d.id); modal=true; }
+          else if(a==='release'){ el.remove(); GameActions.releaseDriver(d.id); }
+          else if(a==='demote'){ el.remove(); GameActions.demoteToReserve(d.id); }
+          else if(a==='promoteReserve'){ el.remove(); GameActions.promoteReserve(d.id); modal=true; }
+          else if(a==='reserveLoan'){ el.remove(); GameActions.showReserveLoanModal(d.id); modal=true; }
+          else if(a==='juniorReserve'){ el.remove(); GameActions.promoteJunior(d.id,'reserve'); }
+          else if(a==='juniorRace'){ if(confirm('Promote '+d.name+' to a race seat? This displaces your second race driver.')){el.remove();GameActions.promoteJunior(d.id,'race');}else refresh=false; }
+          else if(a==='juniorLoan'){ el.remove(); GameActions.showLoanModal(d.id); modal=true; }
+          else if(a==='juniorRelease'){ el.remove(); GameActions.releaseJunior(d.id); }
+          else if(a==='signRace'){ el.remove(); GameActions.signDriver(d.id); modal=true; }
+          else if(a==='signReserve'){ el.remove(); GameActions.signReserve(d.id); modal=true; }
+          else if(a==='signJunior'){ el.remove(); GameActions.signProspectAsJunior(d.id); }
+          else if(a==='preSign'){ el.remove(); GameActions.commitProspect(d.id); modal=true; }
+          else if(a==='approach'){ el.remove(); UI.showApproachPicker(d.id); modal=true; }
+          else if(a==='scout'){ GameActions.scoutGridDriver(d.id); }
+          if(modal){ setTimeout(function(){ elevateOpenHQModals(); },0); }
+          if(refresh) setTimeout(window._hqRefresh,60);
+        } catch(e){}
+      });
       (doc.querySelector('.gm')||doc.body).appendChild(el);
       var close=el.querySelector('[data-hq-profile-close]'); if(close) close.focus();
     } catch(e){}
@@ -33882,6 +34212,19 @@ window._pwHandleOrder = function(code, val){
     return false;
   };
   function anyModalOpen(){ try { var ms=document.querySelectorAll('.modal-overlay'); for(var i=0;i<ms.length;i++){ var m=ms[i]; if(!m.classList.contains('hidden') && m.offsetParent!==null) return true; } } catch(e){} return false; }
+  // Shared classic dialogs still contain a lot of canonical game logic (contracts, sponsor
+  // negotiations, loans, event choices).  Keep Team HQ mounted underneath them and lift only
+  // the dialog above the iframe.  Hiding the frame here was the cause of the strategy picker
+  // appearing to jump to the old UI and then vanish when it closed.
+  function elevateOpenHQModals(){
+    try {
+      var ms=document.querySelectorAll('.modal-overlay');
+      for(var i=0;i<ms.length;i++){
+        var m=ms[i];
+        if(!m.classList.contains('hidden') && m.offsetParent!==null) m.style.zIndex='100000';
+      }
+    } catch(e){}
+  }
 
   window._hqMount = function(){
     if(flag()!=='hq') return false;
@@ -33975,9 +34318,53 @@ window._pwHandleOrder = function(code, val){
           setTimeout(window._hqRefresh, 100);
         }
       });
-      // Run the current Grand Prix (auto-runs qualifying), then show the HQ result screen.
+      var _hqOpenStrategy=function(){
+        if(window._hqOffseasonGuard()) return;
+        try {
+          var r=State.getCurrentRace&&State.getCurrentRace();
+          if(!r||r.raceDone) return;
+          if(window._hqRC&&window._hqRC.openStrategy) window._hqRC.openStrategy();
+        } catch(e){ console.warn(e); }
+      };
+      var _hqStrategyReady=function(){
+        try {
+          var r=State.getCurrentRace&&State.getCurrentRace();
+          if(!r||!r.qualiDone||r.raceDone) return true;
+          var st=GameActions._getRaceStrategyState?GameActions._getRaceStrategyState(r):{mode:r._chosenStrategy};
+          if(st&&st.mode) return true;
+          _hqOpenStrategy();
+          try { UI.toast('Set a race strategy or choose Auto before starting the Grand Prix.','warning'); } catch(e){}
+          return false;
+        } catch(e){ return true; }
+      };
+      rc.on('openStrategy',_hqOpenStrategy);
+      rc.on('confirmStrategyHQ',function(p){
+        if(window._hqOffseasonGuard()) return;
+        try {
+          p=p||{};var r=State.getCurrentRace&&State.getCurrentRace();if(!r||r.raceDone)return;
+          r._chosenStrategy=p.teamStrategy||null;
+          r._pendingStrategy=null;
+          r._driverStrategies=Object.assign({},p.driverStrategies||{});
+          r._ersDeployment=Object.assign({},p.ers||{});
+          if(!r.qualiDone) r._usedTyreQuali=Object.assign({},p.usedTyres||{});
+          State.game.autoStrategy=(r._chosenStrategy==='auto');
+          if(r._chosenStrategy==='split') State.game.autoStrategy=false;
+          Storage.autosave();
+          var label=r._chosenStrategy==='split'?'Split Strategy':r._chosenStrategy==='auto'?'Auto Strategy':((DATA.getStrategyOptions(r,r._weatherRisk||0).options.find(function(o){return o.id===r._chosenStrategy;})||{}).label||'Strategy');
+          try { rc.toast('Strategy locked: '+label,'success'); } catch(e){}
+          window._hqScreen='dashboard';window._hqRC.render(window._buildHQAll());window._hqRC.show('dashboard');
+        } catch(e){ console.warn(e);try{rc.toast('Could not save that strategy','error');}catch(e2){} }
+      });
+      rc.on('setAutoStrategy',function(){
+        if(window._hqOffseasonGuard()) return;
+        try { GameActions.setAutoStrategyDash(); } catch(e){}
+        try { window._hqRC.render(window._buildHQAll()); window._hqRC.show('dashboard'); } catch(e){}
+      });
+      // Run the current Grand Prix, then show the HQ result screen. A strategy choice is an
+      // explicit part of the session order; Simulate can no longer silently bypass it.
       var _doSimWeekend = function(){
         if(window._hqOffseasonGuard()) return;
+        if(!_hqStrategyReady()) return;
         if(window.__hqBusy) return; window.__hqBusy=true; setTimeout(function(){window.__hqBusy=false;},700);
         try { if(typeof GameActions!=='undefined' && GameActions.simRace){ GameActions.simRace(); } } catch(e){}
         try { window._hqScreen='raceResult';window._hqRC.render(window._buildHQAll()); window._hqRC.show('raceResult'); } catch(e){}
@@ -34032,16 +34419,20 @@ window._pwHandleOrder = function(code, val){
         if(window.__hqBusy) return; window.__hqBusy=true; setTimeout(function(){window.__hqBusy=false;},1100);
         try { if(typeof GameActions!=='undefined' && GameActions.simHalfSeason){ GameActions.simHalfSeason(); } } catch(e){}
         try {
-          var g=State.game, over=(!g||g.raceIndex>=g.calendar.length);
-          if(over){ window._hqReveal('nav'); } else { setTimeout(window._hqRefresh, 220); }
+          setTimeout(window._hqRefresh, 220);
         } catch(e){ setTimeout(window._hqRefresh, 220); }
+      });
+      rc.on('simQuarter', function(){
+        if(window._hqOffseasonGuard()) return;
+        if(window.__hqBusy) return; window.__hqBusy=true; setTimeout(function(){window.__hqBusy=false;},1100);
+        try { if(typeof GameActions!=='undefined' && GameActions.simQuarter){ GameActions.simQuarter(); } } catch(e){}
+        setTimeout(window._hqRefresh, 220);
       });
       rc.on('simSeasonEnd', function(){
         if(window._hqOffseasonGuard()) return;
         if(window.__hqBusy) return; window.__hqBusy=true; setTimeout(function(){window.__hqBusy=false;},1100);
         try { if(typeof GameActions!=='undefined' && GameActions.simRemainingSeason){ GameActions.simRemainingSeason(); } } catch(e){}
-        // Simming to the end triggers the season-end / offseason flow; hand to the classic UI for it.
-        try { window._hqReveal('nav'); } catch(e){}
+        // The season-end prompt is a shared modal; the watchdog lifts it above Team HQ.
         setTimeout(window._hqRefresh, 260);
       });
       var _hqEnterWeekend = function(){
@@ -34054,6 +34445,7 @@ window._pwHandleOrder = function(code, val){
             if(!r.sprintDone){window._hqReveal('race');GameActions.watchSprintFromDash&&GameActions.watchSprintFromDash();return;}
           }
           if(r && !r.qualiDone){_hqSimGpQuali();return;}
+          if(!_hqStrategyReady()) return;
           window._hqReveal('race');
           GameActions.watchRaceFromDash && GameActions.watchRaceFromDash();
         } catch(e){ console.warn(e); }
@@ -34076,6 +34468,8 @@ window._pwHandleOrder = function(code, val){
           if(window._hqRC){ window._hqScreen='car'; window._hqRC.render(window._buildHQAll()); window._hqRC.show('car'); } } catch(e){ console.warn(e); }
       });
       rc.on('setQuarterDev', function(p){ try { if(GameActions.updateDevSlider) GameActions.updateDevSlider('q'+p.qi,p.key,p.value); Storage.autosave(); } catch(e){} window._hqRefresh(); });
+      rc.on('setComponentFocus', function(p){ try { if(GameActions.setComponentFocus) GameActions.setComponentFocus(p.qi,p.group,p.value); Storage.autosave(); } catch(e){} window._hqRefresh(); });
+      rc.on('setQuarterDiversion', function(p){ try { if(GameActions.setQuarterDiversion) GameActions.setQuarterDiversion(p.qi,p.value); Storage.autosave(); } catch(e){} });
       rc.on('applyQuarterDev', function(p){ try { if(GameActions.applyQuarterDev) GameActions.applyQuarterDev(p.qi); } catch(e){} window._hqRefresh(); });
       rc.on('takeNewPU', function(){ try { if(GameActions.takeNewPU) GameActions.takeNewPU(); } catch(e){} window._hqRefresh(); });
       // action buttons on the new screens -> perform in the classic section (fully functional), then hand back
@@ -34170,9 +34564,12 @@ window._pwHandleOrder = function(code, val){
       rc.on('renewStaff', function(p){ if(!hasGame())return; p=p||{}; try { var t=T_(State.game.playerTeamId), roleId=_hqStaffRoleId(t,p.role); if(roleId&&GameActions.renewStaff) GameActions.renewStaff(roleId); } catch(e){} window._hqRefresh(); });
       rc.on('releaseStaff', function(p){ if(!hasGame())return; p=p||{}; try { var t=T_(State.game.playerTeamId), roleId=_hqStaffRoleId(t,p.role); if(roleId&&GameActions.fireStaff) GameActions.fireStaff(roleId); } catch(e){} window._hqRefresh(); });
       rc.on('promoteJunior', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(d&&GameActions.promoteJunior) GameActions.promoteJunior(d.id,'reserve'); window._hqRefresh(); });
+      rc.on('promoteJuniorRace', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(!d||!GameActions.promoteJunior)return; if(confirm('Promote '+d.name+' to a race seat? This will displace your second race driver.')) GameActions.promoteJunior(d.id,'race'); window._hqRefresh(); });
+      rc.on('loanJunior', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(d&&GameActions.showLoanModal){ GameActions.showLoanModal(d.id); _hqElevateModal(); elevateOpenHQModals(); } });
+      rc.on('upgradeAcademy', function(){ if(!hasGame())return; if(GameActions.upgradeAcademy) GameActions.upgradeAcademy(); window._hqRefresh(); });
       rc.on('releaseJunior', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(d&&GameActions.releaseJunior) GameActions.releaseJunior(d.id); window._hqRefresh(); });
       rc.on('signJunior', function(){ if(!hasGame())return; try { if(GameActions.showRecruitJunior){ GameActions.showRecruitJunior(); _hqElevateModal(); } } catch(e){} });
-      rc.on('signProspect', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(d&&GameActions.signProspectAsJunior) GameActions.signProspectAsJunior(d.id); window._hqRefresh(); });
+      rc.on('signProspect', function(p){ if(!hasGame())return; var d=_hqDriverRef(p); if(d) window._hqShowDriverProfile({id:d.id,name:d.name}); });
       rc.on('deployScout', function(){ if(!hasGame())return; try { if(GameActions.scoutProspects) GameActions.scoutProspects(); } catch(e){} window._hqScreen='scouting'; window._hqRefresh(); });
       rc.on('foundAcademy', function(p){ if(!hasGame())return; p=p||{}; try { if(GameActions.foundAcademy) GameActions.foundAcademy(p.tier!=null?p.tier:0); } catch(e){} window._hqScreen='academy'; window._hqRefresh(); });
       rc.on('viewRace', function(p){
@@ -34184,12 +34581,23 @@ window._pwHandleOrder = function(code, val){
       // Sponsor offers on the Finance screen: full negotiation runs in the classic modal;
       // ⚡ Auto signs instantly at the classic −10% penalty and stays in the shell.
       rc.on('negotiateSponsor', function(p){
-        try { window._hqReveal('modal'); GameActions.negotiateSponsor(p&&p.ref); } catch(e){}
+        try { GameActions.negotiateSponsor(p&&p.ref); _hqElevateModal(); elevateOpenHQModals(); } catch(e){}
+      });
+      rc.on('terminateSponsor', function(p){
+        try { if(GameActions.terminateSponsor) GameActions.terminateSponsor(p&&p.index); } catch(e){}
+        window._hqScreen='finance'; setTimeout(window._hqRefresh,40);
       });
       rc.on('autoSignSponsor', function(p){
         try { GameActions.autoSignSponsor(p&&p.ref); } catch(e){}
         try { window._hqScreen='finance'; window._hqRC.render(window._buildHQAll()); window._hqRC.show('finance'); setTimeout(window._hqEnhance,0); } catch(e){}
       });
+      rc.on('acceptTeamOffer', function(p){
+        if(!hasGame()||!p)return; if(confirm('Accept the offer from '+p.name+' and leave your current team?')){ try { UI.acceptNewTeamOffer(p.teamId); } catch(e){} window._hqScreen='offseason'; setTimeout(window._hqRefresh,60); }
+      });
+      rc.on('declineTeamOffers', function(){ if(!hasGame())return; State.game.teamOffers=[]; Storage.autosave(); window._hqScreen='offseason'; window._hqRefresh(); });
+      rc.on('blockPoach', function(p){ if(!hasGame())return; try { GameActions.blockPoach(p&&p.index); } catch(e){} window._hqScreen='offseason'; window._hqRefresh(); });
+      rc.on('allowPoach', function(p){ if(!hasGame())return; try { GameActions.allowPoach(p&&p.index); } catch(e){} window._hqScreen='offseason'; window._hqRefresh(); });
+      rc.on('requestTeamMove', function(p){ if(!hasGame())return; try { GameActions.requestTeamMove(p&&p.teamId); } catch(e){} window._hqScreen='offseason'; setTimeout(window._hqRefresh,60); });
 
       // ---- landing actions ----
       rc.on('continue', function(saveId){
@@ -34522,11 +34930,12 @@ window._pwHandleOrder = function(code, val){
       };
     }
   } catch(e){}
-  // watchdog: reveal classic for any modal that opens while HQ is shown, hand back on close
+  // Watchdog: shared dialogs float above Team HQ. They no longer tear the player out of the
+  // new interface; explicit full-page race/editor routes still use _hqReveal themselves.
   setInterval(function(){
     if(flag()!=='hq') return; if(!frame()) return;
     var open=anyModalOpen();
-    if(window._hqMode==='hq' && open){ window._hqReveal('modal'); }
+    if(window._hqMode==='hq' && open){ elevateOpenHQModals(); }
     else if(window._hqMode==='classic' && window._hqReason==='modal' && !open){ window._hqRestore(); }
   }, 600);
 
