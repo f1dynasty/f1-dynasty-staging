@@ -32326,8 +32326,15 @@ window._pwHandleOrder = function(code, val){
       return '<div style="margin:10px 0;padding:9px 10px;background:#f7f8fb;border:1px solid var(--line);border-radius:8px;opacity:'+(inactive?'.48':'1')+'"><div class="fs10 fnt hudf" style="margin-bottom:6px">'+title+(inactive?' · allocate budget above to activate':'')+'</div><div class="fx gap6 wrap">'+opts.map(function(o){var on=cur===o.id;return '<button class="renew'+(on?'':' ghost')+'" data-act="setComponentFocus" data-arg=\''+argOf({qi:w.qi,group:group,value:o.id})+'\''+(inactive?' disabled':'')+'>'+esc(o.label)+(o.rating!=null?' '+o.rating:'')+'</button>';}).join('')+'</div></div>';
     }
     function diversionControl(w,disabled){if(!w.canDivert)return '';return '<div style="margin:12px 0;padding:10px 12px;background:#fff7e8;border:1px solid rgba(232,150,26,.35);border-radius:9px"><div class="fw8 fs11" style="color:#9a5a00">New-Reg Diversion · '+esc(w.nextRegsYear)+'</div><div class="fs11 mut mt4">Redirect part of this package to the next regulation concept.</div><label style="display:grid;grid-template-columns:70px 1fr 70px;gap:8px;align-items:center;margin-top:9px"><span class="fs10 mut">Current car</span><input type="range" min="0" max="100" step="10" value="'+(w.diversion||0)+'" data-diversion="'+w.qi+'"'+(disabled?' disabled':'')+'><b class="mono fs11" style="text-align:right">'+(w.diversion||0)+'% new regs</b></label></div>';}
+    var winterDev='';
+    if(D.winterDev){
+      var wd=D.winterDev;
+      var winterRows=(wd.areas||[]).map(function(a){var canRemove=(a.spent||0)>0,canAdd=(wd.remaining||0)>0;return '<div style="padding:13px 0;border-top:1px solid var(--line)"><div class="fx ac jb gap10 wrap"><div style="min-width:180px;flex:1"><div class="fw8 fs13">'+esc(a.label)+'</div><div class="fs11 mut mt4">'+esc(a.effect||'')+'</div></div><div class="fx ac gap7" style="flex:none"><button type="button" class="stepbtn" data-act="allocateWinterDev" data-arg=\''+argOf({area:a.id,delta:-5})+'\''+(canRemove?'':' disabled')+'>−</button><b class="mono fs12" style="min-width:42px;text-align:center">$'+(a.spent||0)+'M</b><button type="button" class="stepbtn" data-act="allocateWinterDev" data-arg=\''+argOf({area:a.id,delta:5})+'\''+(canAdd?'':' disabled')+'>+</button></div></div></div>';}).join('');
+      winterDev='<div id="hq-winter-development">'+secH('Winter Development')+'<div class="tele" style="border-left:4px solid var(--red)"><div class="fx ac jb gap12 wrap"><div><div class="fs10 fnt hudf">OFFSEASON DEVELOPMENT</div><div class="fw8 fs16 mt4">Build the '+esc((TeamHQ.data.team&&TeamHQ.data.team.season)||'next')+' car</div></div><div class="fx gap8">'+tile('Budget','$'+wd.budget+'M','')+tile('Remaining','$'+wd.remaining+'M',wd.remaining>0?'grn':'')+'</div></div><div class="fs11 mut" style="margin:12px 0 3px;line-height:1.5">Allocate the winter budget here or in Continue Offseason Prep. Both controls edit the same plan, which is applied when you start the new season.</div>'+winterRows+'</div></div>';
+    }
     var windows = '';`; });
       _hq = _hq.replace("              + (w.status==='available'?'<button class=\"gcta2\" data-act=\"applyQuarterDev\"", "              + focusControls(w,'aero','Aero Component Focus',disabled||!(w.aero>0)) + focusControls(w,'mechanical','Mechanical Component Focus',disabled||!(w.reliability>0)) + diversionControl(w,disabled)\n              + (w.status==='available'?'<button class=\"gcta2\" data-act=\"applyQuarterDev\"");
+      _hq = _hq.replace("var windowsTab = '<div class=\"cols\"><div class=\"fx col gap24\">'+windows+", "var windowsTab = '<div class=\"cols\"><div class=\"fx col gap24\">'+winterDev+windows+");
       // Completed and pending scouting reports for current grid drivers were another classic
       // section that had no HQ destination.
       _hq = _hq.replace("    el.innerHTML = note + '<div class=\"cols\">", function(){ return String.raw`    var gridBlock='';
@@ -33268,7 +33275,17 @@ html[data-theme="dark"] .sttbl th{background:#202631}html[data-theme="dark"] .st
       var focusOptions={}; try { ['aero','mechanical'].forEach(function(group){ focusOptions[group]=[{id:'balanced',label:'Balanced',rating:null}].concat((COMP_GROUPS[group]||[]).map(function(k){var cm=CAR_COMPONENTS[k]||{};return {id:k,label:(cm.icon?cm.icon+' ':'')+(cm.label||k),rating:R(t.components&&t.components[k])};})); }); } catch(e){}
       return {qi:qi,label:qi===0?'Mid-Season Upgrade Window':'Summer Upgrade Window',threshold:threshold,until:threshold==null?null:Math.max(0,threshold-_racesDone),status:qd.applied?'complete':(threshold!=null&&_racesDone>=threshold?'available':'upcoming'),aero:qd.aero||0,reliability:qd.reliability||0,engine:qd.engine||0,applied:!!qd.applied,focus:focus,focusOptions:focusOptions,canDivert:State.game.nextRegsYear===State.game.season+1&&_racesDone>=10,diversion:Math.round(((State.game.quarterDevDiversion&&State.game.quarterDevDiversion[qi])||0)*100),nextRegsYear:State.game.nextRegsYear||State.game.season+1};
     });
-    var detail={summary:[{label:'Car Performance',value:R(t.carPerformance),display:Number(t.carPerformance||0).toFixed(1),color:'var(--red)'},{label:'Reliability',value:R(t.reliability),display:Number(t.reliability||0).toFixed(1),color:'var(--grn)'},{label:'Development Rate',value:R(t.developmentRate),display:Number(t.developmentRate||0).toFixed(1),color:'var(--blu)'},{label:'Facilities',value:R(t.facilities),display:Number(t.facilities||0).toFixed(1),color:'var(--amb)'}],facilities:_facUnits,components:_components,trackName:_race&&_race.name?String(_race.name).replace(' Grand Prix',''):'',subStats:stats.map(function(s,i){return {label:s.label,value:s.value,display:s.value+' · '+(['P1','P1','P1','P1','P1'][i]||''),color:['var(--amb)','var(--vio)','var(--blu)','var(--grn)','var(--red)'][i]};}),power:_power,finance:_finance,windows:_windows,windowBudget:_qBudget,racesDone:_racesDone};
+    var _winterDev=null;
+    try {
+      if(State.game.offseasonPending){
+        var _wd=State.game.offseasonBudget||{aero:0,engine:0,reliability:0,facilities:0};
+        var _wb=Math.max(5,Math.round((t.revenue||0)*0.35/5)*5);
+        var _ws=(_wd.aero||0)+(_wd.engine||0)+(_wd.reliability||0)+(_wd.facilities||0);
+        var _effects={aero:'Improves aerodynamics and overall car performance',engine:'Improves power-unit integration and car performance',reliability:'Improves reliability and mechanical components',facilities:'Improves facilities and the team development rate'};
+        _winterDev={budget:_wb,remaining:Math.max(0,_wb-_ws),spent:_ws,areas:['aero','engine','reliability','facilities'].map(function(k){return {id:k,label:k.charAt(0).toUpperCase()+k.slice(1),spent:_wd[k]||0,effect:_effects[k]||''};})};
+      }
+    } catch(e){}
+    var detail={summary:[{label:'Car Performance',value:R(t.carPerformance),display:Number(t.carPerformance||0).toFixed(1),color:'var(--red)'},{label:'Reliability',value:R(t.reliability),display:Number(t.reliability||0).toFixed(1),color:'var(--grn)'},{label:'Development Rate',value:R(t.developmentRate),display:Number(t.developmentRate||0).toFixed(1),color:'var(--blu)'},{label:'Facilities',value:R(t.facilities),display:Number(t.facilities||0).toFixed(1),color:'var(--amb)'}],facilities:_facUnits,components:_components,trackName:_race&&_race.name?String(_race.name).replace(' Grand Prix',''):'',subStats:stats.map(function(s,i){return {label:s.label,value:s.value,display:s.value+' · '+(['P1','P1','P1','P1','P1'][i]||''),color:['var(--amb)','var(--vio)','var(--blu)','var(--grn)','var(--red)'][i]};}),power:_power,finance:_finance,windows:_windows,windowBudget:_qBudget,racesDone:_racesDone,winterDev:_winterDev};
     return { ovr:R(t.carPerformance), stats:stats, upgrades:ups, setup:setup, detail:detail, development:{ budget:'$'+R(t.revenue)+'M', allocations:alloc } };
   };
   window._buildHQFinance = function(){
@@ -34807,7 +34824,15 @@ html[data-theme="dark"] .sttbl th{background:#202631}html[data-theme="dark"] .st
         // Car development is still powered by the original functional surface:
         // it contains the live sliders, PU allocation controls, and both upgrade windows.
         // Keep it as the Car page rather than sending the player to a partial summary.
-        if(name==='car'){ setTimeout(window._hqRefresh, 20); return; }
+        if(name==='car'){
+          try {
+            if(State.game&&State.game.offseasonPending){
+              var cw=frame()&&frame().contentWindow;
+              if(cw&&cw.TeamHQ){ cw.TeamHQ._subtabs=cw.TeamHQ._subtabs||{}; cw.TeamHQ._subtabs.car='windows'; }
+            }
+          } catch(e){}
+          setTimeout(window._hqRefresh, 20); return;
+        }
         setTimeout(window._hqRefresh, 20);
       });
       // Car page aero setup controls -> classic GameActions, then refresh the car screen.
@@ -35082,7 +35107,7 @@ html[data-theme="dark"] .sttbl th{background:#202631}html[data-theme="dark"] .st
       rc.on('scoutProspects', function(){ try { (typeof GameActions!=='undefined') && GameActions.scoutProspects && GameActions.scoutProspects(); } catch(e){} refreshOffseason(); });
       rc.on('renewEngine', function(){ try { (typeof GameActions!=='undefined') && GameActions.renewEngine && GameActions.renewEngine(); } catch(e){} refreshOffseason(); });
       rc.on('switchEngine', function(p){ p=p||{}; try { if(typeof GameActions!=='undefined' && GameActions.switchEngine && p.id) GameActions.switchEngine(p.id); } catch(e){} refreshOffseason(); });
-      rc.on('allocateWinterDev', function(p){ p=p||{}; try { var g=State.game; if(!g.offseasonBudget) g.offseasonBudget={aero:0,engine:0,reliability:0,facilities:0}; var area=p.area, delta=p.delta||0; var t=(g.teams||[]).find(function(x){return String(x.id)===String(g.playerTeamId);})||{}; var budget=Math.max(5, Math.round((t.revenue||0)*0.35/5)*5); var spent=(g.offseasonBudget.aero||0)+(g.offseasonBudget.engine||0)+(g.offseasonBudget.reliability||0)+(g.offseasonBudget.facilities||0); var remaining=budget-spent; var cur=g.offseasonBudget[area]||0; var next=Math.max(0, cur+delta); if(delta>0 && delta>remaining) next=cur+remaining; g.offseasonBudget[area]=next; } catch(e){} refreshOffseason(); });
+      rc.on('allocateWinterDev', function(p){ p=p||{}; try { var g=State.game; if(!g.offseasonBudget) g.offseasonBudget={aero:0,engine:0,reliability:0,facilities:0}; var area=p.area, delta=p.delta||0; if(['aero','engine','reliability','facilities'].indexOf(area)<0) return; var t=(g.teams||[]).find(function(x){return String(x.id)===String(g.playerTeamId);})||{}; var budget=Math.max(5, Math.round((t.revenue||0)*0.35/5)*5); var spent=(g.offseasonBudget.aero||0)+(g.offseasonBudget.engine||0)+(g.offseasonBudget.reliability||0)+(g.offseasonBudget.facilities||0); var remaining=budget-spent; var cur=g.offseasonBudget[area]||0; var next=Math.max(0, cur+delta); if(delta>0 && delta>remaining) next=cur+remaining; g.offseasonBudget[area]=next; Storage.autosave(); } catch(e){} refreshOffseason(); });
       rc.on('investRegs', function(p){ p=p||{}; try { State.game.regsInvestment = Math.max(0,Math.min(100,p.pct||0))/100; } catch(e){} refreshOffseason(); });
       rc.on('beginSeason', function(){ try { (typeof GameActions!=='undefined') && GameActions.beginSeason && GameActions.beginSeason(); } catch(e){} setTimeout(function(){ try { window._hqRC.render(window._buildHQAll()); window._hqRC.show('dashboard'); } catch(e){} window._hqRestore(); }, 100); });
 
